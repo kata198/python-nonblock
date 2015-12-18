@@ -11,7 +11,9 @@ These are pure-python functions which perform non-blocking I/O in python.
 nonblock\_read provides the ability to read anything available on a buffer, like a file or a pipe or a socket, in a non-blocking fashion. Methods like readline will block until a newline is printed, etc.
 
 
-You can provide a limit (or default None is anything available) and up to that many bytes, if available, will be returned. When the stream is closed on the other side, and you have already read all the data (i.e. you've already been returned all data and it's impossible that more will ever be there in the future), "None" is returned.
+You can provide a limit (or default None is anything available) and up to that many bytes, if available, will be returned.
+
+When the stream is closed on the other side, and you have already read all the data (i.e. you've already been returned all data and it's impossible that more will ever be there in the future), "None" is returned.
 
 
 	def nonblock\_read(stream, limit=None, forceMode=None):
