@@ -1,0 +1,7 @@
+recursive-include nonblock *.py
+include ChangeLog
+include README.md
+include README.rst
+include setup.py
+include MANIFEST.in
+inclide LICENSE
