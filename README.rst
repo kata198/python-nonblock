@@ -1,4 +1,6 @@
-# python-nonblock
+python-nonblock
+===============
+
 Non-blocking python IO functions
 
 
