@@ -8,7 +8,9 @@
 
 from .read import nonblock_read
 
-__all__ = ('nonblock_read', )
+from .BackgroundWrite import bgwrite, bgwrite_chunk
+
+__all__ = ('nonblock_read', 'bgwrite', 'bgwrite_chunk')
 
 __version__ = '2.0.0'
 __version_tuple = (2, 0, 0)
