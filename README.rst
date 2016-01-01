@@ -84,7 +84,7 @@ An example usage:
 	idleTask()
 
 
-**Background Writing**
+**Background Writing - bgwrite**
 
 python-nonblock provides a clean way to write to streams in a non-blocking, configurable, and interactive-supporting way.
 
@@ -105,7 +105,7 @@ The core of this functionality comes from the bgwrite function:
 				@param data    <str/bytes/list> - The data to write. If a list is given, each successive element will be written to the fileObj and flushed. If a string/bytes is provided, it will be chunked according to the #BackgroundIOPriority chosen. If you would like a different chunking than the chosen ioPrio provides, use #bgwrite_chunk function instead.
 
 
-				   Chunking makes the data available quicker on the other side, reduces iowait on this side, and thus increases interactivity (at penalty of throughput).
+					Chunking makes the data available quicker on the other side, reduces iowait on this side, and thus increases interactivity (at penalty of throughput).
 
 
 				@param closeWhenFinished <bool> - If True, the given fileObj will be closed after all the data has been written. Default False.
@@ -118,6 +118,7 @@ The core of this functionality comes from the bgwrite function:
 
 
 				@return - BackgroundWriteProcess - An object representing the state of this operation. @see BackgroundWriteProcess
+
 		'''
 
 
@@ -130,7 +131,7 @@ bgwrite will write data in blocks and perform heuristics in order to provide int
 *Example*
 
 
-An example of a script using several bgwrites in addition to performing CPU-bound calculations can be found at: http://htmlpreview.github.io/?https://github.com/kata198/python-nonblock/blob/master/testWrite.py
+An example of a script using several bgwrites in addition to performing CPU-bound calculations can be found at: https://github.com/kata198/python-nonblock/blob/master/testWrite.py 
 
 
 

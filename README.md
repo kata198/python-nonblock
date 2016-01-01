@@ -55,7 +55,7 @@ An example usage:
 	idleTask()
 
 
-**Background Writing**
+**Background Writing - bgwrite**
 
 python-nonblock provides a clean way to write to streams in a non-blocking, configurable, and interactive-supporting way.
 
@@ -87,7 +87,7 @@ bgwrite will write data in blocks and perform heuristics in order to provide int
 
 *Example*
 
-An example of a script using several bgwrites in addition to performing CPU-bound calculations can be found at: http://htmlpreview.github.io/?https://github.com/kata198/python-nonblock/blob/master/testWrite.py
+An example of a script using several bgwrites in addition to performing CPU-bound calculations can be found at: https://github.com/kata198/python-nonblock/blob/master/testWrite.py 
 
 
 Full Documentation
