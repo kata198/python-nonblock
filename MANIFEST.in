@@ -1,7 +1,9 @@
 recursive-include nonblock *.py
+recursive-include doc *.html
 include ChangeLog
 include README.md
 include README.rst
 include setup.py
 include MANIFEST.in
 inclide LICENSE
+include testWrite.py

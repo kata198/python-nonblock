@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module nonblock.read</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="nonblock.html"><font color="#ffffff">nonblock</font></a>.read</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href="nonblock.html">index</a><br></font></td></tr></table>
+    <p><tt>Copyright&nbsp;(c)&nbsp;2015&nbsp;Timothy&nbsp;Savannah&nbsp;under&nbsp;terms&nbsp;of&nbsp;LGPLv2.&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;this&nbsp;LICENSE&nbsp;with&nbsp;this&nbsp;distribution.<br>
+&nbsp;<br>
+read.py&nbsp;Contains&nbsp;pure-python&nbsp;functions&nbsp;for&nbsp;non-blocking&nbsp;reads&nbsp;in&nbsp;python</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="select.html">select</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-nonblock_read"><strong>nonblock_read</strong></a>(stream, limit=None, forceMode=None)</dt><dd><tt>nonblock_read&nbsp;-&nbsp;Read&nbsp;any&nbsp;data&nbsp;available&nbsp;on&nbsp;the&nbsp;given&nbsp;stream&nbsp;without&nbsp;blocking&nbsp;and&nbsp;regardless&nbsp;of&nbsp;newlines.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;stream&nbsp;-&nbsp;A&nbsp;stream&nbsp;(like&nbsp;a&nbsp;file&nbsp;object)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;limit&nbsp;&lt;None/int&gt;&nbsp;-&nbsp;Max&nbsp;number&nbsp;of&nbsp;bytes&nbsp;to&nbsp;read.&nbsp;If&nbsp;None&nbsp;or&nbsp;0,&nbsp;will&nbsp;read&nbsp;as&nbsp;much&nbsp;data&nbsp;is&nbsp;available.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;forceMode&nbsp;&lt;None/mode&nbsp;string&gt;&nbsp;-&nbsp;If&nbsp;the&nbsp;stream&nbsp;object&nbsp;doesn't&nbsp;specify&nbsp;a&nbsp;"mode"&nbsp;param&nbsp;(like&nbsp;a&nbsp;socket),&nbsp;this&nbsp;function&nbsp;will&nbsp;assume&nbsp;the&nbsp;encoding&nbsp;as&nbsp;"bytes".<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;you&nbsp;want&nbsp;to&nbsp;force&nbsp;a&nbsp;stream&nbsp;mode,&nbsp;use&nbsp;"t"&nbsp;for&nbsp;text&nbsp;(str),&nbsp;or&nbsp;"b"&nbsp;for&nbsp;binary&nbsp;(bytes).&nbsp;Usually&nbsp;not&nbsp;required.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@return&nbsp;-&nbsp;Any&nbsp;data&nbsp;available&nbsp;on&nbsp;the&nbsp;stream,&nbsp;or&nbsp;"None"&nbsp;if&nbsp;the&nbsp;stream&nbsp;was&nbsp;closed&nbsp;on&nbsp;the&nbsp;other&nbsp;side&nbsp;and&nbsp;all&nbsp;data&nbsp;has&nbsp;already&nbsp;been&nbsp;read.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__all__</strong> = ('nonblock_read',)</td></tr></table>
+</body></html>

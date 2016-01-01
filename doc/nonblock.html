@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: package nonblock</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>nonblock</strong></big></big> (version 2.0.0)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href="nonblock.html">index</a><br></font></td></tr></table>
+    <p><tt>Copyright&nbsp;(c)&nbsp;2015&nbsp;Timothy&nbsp;Savannah&nbsp;under&nbsp;terms&nbsp;of&nbsp;LGPLv2.&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;this&nbsp;LICENSE&nbsp;with&nbsp;this&nbsp;distribution.<br>
+&nbsp;<br>
+Contains&nbsp;pure-python&nbsp;functions&nbsp;for&nbsp;non-blocking&nbsp;IO&nbsp;in&nbsp;python</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Package Contents</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="nonblock.BackgroundWrite.html">BackgroundWrite</a><br>
+</td><td width="25%" valign=top><a href="nonblock.read.html">read</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="nonblock.BackgroundWrite.html#BackgroundIOPriority">nonblock.BackgroundWrite.BackgroundIOPriority</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="BackgroundIOPriority">class <strong>BackgroundIOPriority</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#BackgroundIOPriority">BackgroundIOPriority</a>&nbsp;-&nbsp;Priority&nbsp;Profile&nbsp;for&nbsp;doing&nbsp;background&nbsp;writes.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;See&nbsp;__init__&nbsp;for&nbsp;fields<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="BackgroundIOPriority-__getitem__"><strong>__getitem__</strong></a>(self, key)</dt></dl>
+
+<dl><dt><a name="BackgroundIOPriority-__init__"><strong>__init__</strong></a>(self, chainPollTime, defaultChunkSize, priorityPct, charityRate=1.85, charityTime=0.0003)</dt><dd><tt>__init__&nbsp;-&nbsp;Create&nbsp;a&nbsp;<a href="#BackgroundIOPriority">BackgroundIOPriority</a>.&nbsp;<br>
+&nbsp;<br>
+Some&nbsp;terms:&nbsp;throughput&nbsp;-&nbsp;Bandwidth&nbsp;out&nbsp;(Megs&nbsp;per&nbsp;second)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interactivity&nbsp;-&nbsp;CPU&nbsp;time&nbsp;available&nbsp;for&nbsp;other&nbsp;tasks&nbsp;(calculations,&nbsp;other&nbsp;I/O,&nbsp;etc)<br>
+&nbsp;<br>
+@param&nbsp;chainPollTime&nbsp;-&nbsp;float&nbsp;&gt;&nbsp;0,&nbsp;When&nbsp;chaining,&nbsp;this&nbsp;is&nbsp;the&nbsp;sleep&nbsp;time&nbsp;between&nbsp;checking&nbsp;if&nbsp;prior&nbsp;is&nbsp;finished.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Too&nbsp;low&nbsp;and&nbsp;the&nbsp;polling&nbsp;takes&nbsp;up&nbsp;CPU&nbsp;time,&nbsp;too&nbsp;high&nbsp;and&nbsp;you'll&nbsp;lose&nbsp;a&nbsp;little&nbsp;time&nbsp;in&nbsp;between&nbsp;chained&nbsp;writes,&nbsp;while&nbsp;gaining&nbsp;interactivity&nbsp;elsewhere.<br>
+&nbsp;<br>
+@param&nbsp;defaultChunkSize&nbsp;-&nbsp;integer&nbsp;&gt;&nbsp;0,&nbsp;When&nbsp;providing&nbsp;a&nbsp;straight&nbsp;string/bytes&nbsp;to&nbsp;bgwrite&nbsp;(instead&nbsp;of&nbsp;chunking&nbsp;yourself,&nbsp;or&nbsp;using&nbsp;bgwrite_chunk)&nbsp;this&nbsp;will<br>
+&nbsp;&nbsp;&nbsp;&nbsp;be&nbsp;used&nbsp;as&nbsp;the&nbsp;max&nbsp;size&nbsp;of&nbsp;each&nbsp;chunk.&nbsp;Each&nbsp;chunk&nbsp;is&nbsp;written&nbsp;and&nbsp;a&nbsp;flush&nbsp;is&nbsp;issued&nbsp;(if&nbsp;the&nbsp;stream&nbsp;supports&nbsp;it).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Increasing&nbsp;this&nbsp;increases&nbsp;throughput&nbsp;while&nbsp;decreasing&nbsp;interactivity<br>
+&nbsp;<br>
+@param&nbsp;priorityPct&nbsp;-&nbsp;integer&nbsp;&gt;&nbsp;0,&nbsp;generally&nbsp;0-100.&nbsp;When&nbsp;this&nbsp;number&nbsp;is&nbsp;high,&nbsp;throughput&nbsp;for&nbsp;the&nbsp;operation&nbsp;will&nbsp;be&nbsp;higher.&nbsp;When&nbsp;it&nbsp;is&nbsp;lower,<br>
+&nbsp;&nbsp;&nbsp;interactivity&nbsp;is&nbsp;higher,&nbsp;e.x.&nbsp;if&nbsp;you&nbsp;have&nbsp;a&nbsp;calculation&nbsp;going&nbsp;and&nbsp;a&nbsp;write&nbsp;going,&nbsp;the&nbsp;lower&nbsp;this&nbsp;number&nbsp;the&nbsp;longer&nbsp;the&nbsp;write&nbsp;will&nbsp;take,&nbsp;but&nbsp;the&nbsp;more<br>
+&nbsp;&nbsp;&nbsp;calculations&nbsp;will&nbsp;be&nbsp;performed&nbsp;during&nbsp;that&nbsp;period.<br>
+&nbsp;<br>
+@param&nbsp;charityRate&nbsp;-&nbsp;float&nbsp;&gt;=&nbsp;0,&nbsp;Every&nbsp;couple&nbsp;of&nbsp;blocks&nbsp;written,&nbsp;the&nbsp;current&nbsp;throughput&nbsp;is&nbsp;checked&nbsp;and&nbsp;if&nbsp;things&nbsp;have&nbsp;been&nbsp;going&nbsp;swiftly<br>
+&nbsp;&nbsp;&nbsp;a&nbsp;short&nbsp;sleep&nbsp;will&nbsp;be&nbsp;incurred.&nbsp;Increasing&nbsp;this&nbsp;number&nbsp;causes&nbsp;that&nbsp;check&nbsp;to&nbsp;happen&nbsp;more&nbsp;often.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;This&nbsp;number&nbsp;is&nbsp;related&nbsp;to&nbsp;both&nbsp;the&nbsp;number&nbsp;of&nbsp;blocks&nbsp;and&nbsp;the&nbsp;priorityPct.&nbsp;The&nbsp;default,&nbsp;should&nbsp;be&nbsp;fine,&nbsp;but&nbsp;you&nbsp;may&nbsp;find&nbsp;it&nbsp;better<br>
+&nbsp;&nbsp;&nbsp;as&nbsp;a&nbsp;different&nbsp;value&nbsp;in&nbsp;certain&nbsp;cases.&nbsp;Increasing&nbsp;or&nbsp;decreasing&nbsp;could&nbsp;either&nbsp;increase&nbsp;or&nbsp;decrease&nbsp;interactivity,&nbsp;depending&nbsp;on&nbsp;those&nbsp;other&nbsp;factors.<br>
+&nbsp;&nbsp;&nbsp;Generally,&nbsp;however,&nbsp;increasing&nbsp;this&nbsp;increases&nbsp;interactivity&nbsp;and&nbsp;ability&nbsp;to&nbsp;write&nbsp;in&nbsp;parallel,&nbsp;at&nbsp;the&nbsp;cost&nbsp;of&nbsp;throughput.<br>
+&nbsp;<br>
+@param&nbsp;charityTime&nbsp;-&nbsp;float&nbsp;&gt;=&nbsp;0&nbsp;-&nbsp;Used&nbsp;to&nbsp;calculate&nbsp;the&nbsp;time&nbsp;to&nbsp;sleep&nbsp;when&nbsp;the&nbsp;charity&nbsp;period&nbsp;hits.&nbsp;The&nbsp;equation&nbsp;is:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sleepTime&nbsp;=&nbsp;charityTime&nbsp;*&nbsp;((dataWritten&nbsp;/&nbsp;delta)&nbsp;/&nbsp;(&nbsp;(dataWritten&nbsp;/&nbsp;delta)&nbsp;*&nbsp;priorityPctDec))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Where&nbsp;dataWritten&nbsp;=&nbsp;number&nbsp;of&nbsp;bytes&nbsp;written&nbsp;already,&nbsp;delta&nbsp;=&nbsp;total&nbsp;time&nbsp;spent&nbsp;writing&nbsp;(not&nbsp;including&nbsp;charity&nbsp;time&nbsp;sleeping)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;priorityPctDec&nbsp;=&nbsp;priorityPct&nbsp;/&nbsp;100.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Increasing&nbsp;this&nbsp;can&nbsp;increase&nbsp;interactivity&nbsp;and&nbsp;allow&nbsp;more&nbsp;parallel&nbsp;operations&nbsp;at&nbsp;the&nbsp;cost&nbsp;of&nbsp;throughput.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;default&nbsp;should&nbsp;be&nbsp;fine&nbsp;for&nbsp;the&nbsp;majority&nbsp;of&nbsp;cases,&nbsp;but&nbsp;it&nbsp;is&nbsp;tunable.<br>
+&nbsp;<br>
+An&nbsp;"interactivity&nbsp;score"&nbsp;is&nbsp;defined&nbsp;to&nbsp;be&nbsp;(number&nbsp;of&nbsp;calculations)&nbsp;/&nbsp;(time&nbsp;to&nbsp;write&nbsp;data).</tt></dd></dl>
+
+<dl><dt><a name="BackgroundIOPriority-__setitem__"><strong>__setitem__</strong></a>(self, key, value)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>chainPollTime</strong></dt>
+</dl>
+<dl><dt><strong>charityRate</strong></dt>
+</dl>
+<dl><dt><strong>charityTime</strong></dt>
+</dl>
+<dl><dt><strong>defaultChunkSize</strong></dt>
+</dl>
+<dl><dt><strong>priorityPct</strong></dt>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-bgwrite"><strong>bgwrite</strong></a>(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=5)</dt><dd><tt>bgwrite&nbsp;-&nbsp;Start&nbsp;a&nbsp;background&nbsp;writing&nbsp;process<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;fileObj&nbsp;&lt;stream&gt;&nbsp;-&nbsp;A&nbsp;stream&nbsp;backed&nbsp;by&nbsp;an&nbsp;fd<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;data&nbsp;&nbsp;&nbsp;&nbsp;&lt;str/bytes/list&gt;&nbsp;-&nbsp;The&nbsp;data&nbsp;to&nbsp;write.&nbsp;If&nbsp;a&nbsp;list&nbsp;is&nbsp;given,&nbsp;each&nbsp;successive&nbsp;element&nbsp;will&nbsp;be&nbsp;written&nbsp;to&nbsp;the&nbsp;fileObj&nbsp;and&nbsp;flushed.&nbsp;If&nbsp;a&nbsp;string/bytes&nbsp;is&nbsp;provided,&nbsp;it&nbsp;will&nbsp;be&nbsp;chunked&nbsp;to&nbsp;the&nbsp;default&nbsp;size&nbsp;(4096)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This&nbsp;makes&nbsp;the&nbsp;data&nbsp;available&nbsp;quicker&nbsp;on&nbsp;the&nbsp;other&nbsp;side,&nbsp;reduces&nbsp;iowait&nbsp;on&nbsp;this&nbsp;side,&nbsp;and&nbsp;thus&nbsp;increases&nbsp;interactivity&nbsp;(at&nbsp;penalty&nbsp;of&nbsp;throughput).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;you&nbsp;want&nbsp;to&nbsp;write&nbsp;in&nbsp;one&nbsp;big&nbsp;block&nbsp;for&nbsp;some&nbsp;reason&nbsp;(why&nbsp;not&nbsp;.write&nbsp;directly?),&nbsp;make&nbsp;your&nbsp;bytes/str&nbsp;into&nbsp;a&nbsp;list.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;closeWhenFinished&nbsp;&lt;bool&gt;&nbsp;-&nbsp;If&nbsp;True,&nbsp;the&nbsp;given&nbsp;fileObj&nbsp;will&nbsp;be&nbsp;closed&nbsp;after&nbsp;all&nbsp;the&nbsp;data&nbsp;has&nbsp;been&nbsp;written.&nbsp;Default&nbsp;False.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;chainAfter&nbsp;&nbsp;&lt;None/BackgroundWriteProcess&gt;&nbsp;-&nbsp;If&nbsp;a&nbsp;BackgroundWriteProcess&nbsp;<a href="builtins.html#object">object</a>&nbsp;is&nbsp;provided&nbsp;(the&nbsp;return&nbsp;of&nbsp;bgwrite*&nbsp;functions),&nbsp;this&nbsp;data&nbsp;will&nbsp;be&nbsp;held&nbsp;for&nbsp;writing&nbsp;until&nbsp;the&nbsp;data&nbsp;associated<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with&nbsp;the&nbsp;provided&nbsp;<a href="builtins.html#object">object</a>&nbsp;has&nbsp;completed&nbsp;writing.&nbsp;Use&nbsp;this&nbsp;to&nbsp;queue&nbsp;several&nbsp;background&nbsp;writes,&nbsp;but&nbsp;retain&nbsp;order&nbsp;within&nbsp;the&nbsp;resulting&nbsp;stream.<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@return&nbsp;-&nbsp;BackgroundWriteProcess&nbsp;-&nbsp;An&nbsp;<a href="builtins.html#object">object</a>&nbsp;representing&nbsp;the&nbsp;state&nbsp;of&nbsp;this&nbsp;operation.&nbsp;@see&nbsp;BackgroundWriteProcess</tt></dd></dl>
+ <dl><dt><a name="-bgwrite_chunk"><strong>bgwrite_chunk</strong></a>(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=None, ioPrio=5)</dt><dd><tt>bgwrite_chunk&nbsp;-&nbsp;Chunk&nbsp;up&nbsp;the&nbsp;data&nbsp;into&nbsp;even&nbsp;#chunkSize&nbsp;blocks,&nbsp;and&nbsp;then&nbsp;pass&nbsp;it&nbsp;onto&nbsp;#bgwrite.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Use&nbsp;this&nbsp;to&nbsp;break&nbsp;up&nbsp;a&nbsp;block&nbsp;of&nbsp;data&nbsp;into&nbsp;smaller&nbsp;segments&nbsp;that&nbsp;can&nbsp;be&nbsp;written&nbsp;and&nbsp;flushed.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;smaller&nbsp;the&nbsp;chunks,&nbsp;the&nbsp;more&nbsp;interactive&nbsp;(recipient&nbsp;gets&nbsp;data&nbsp;quicker,&nbsp;iowait&nbsp;goes&nbsp;down&nbsp;for&nbsp;you)&nbsp;at&nbsp;cost&nbsp;of&nbsp;throughput.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@see&nbsp;bgwrite<br>
+&nbsp;<br>
+@param&nbsp;data&nbsp;&lt;string/bytes&gt;&nbsp;-&nbsp;The&nbsp;data&nbsp;to&nbsp;chunk&nbsp;up<br>
+&nbsp;<br>
+@param&nbsp;chunkSize&nbsp;&lt;integer&gt;&nbsp;-&nbsp;The&nbsp;max&nbsp;siZe&nbsp;of&nbsp;each&nbsp;chunk.</tt></dd></dl>
+ <dl><dt><a name="-nonblock_read"><strong>nonblock_read</strong></a>(stream, limit=None, forceMode=None)</dt><dd><tt>nonblock_read&nbsp;-&nbsp;Read&nbsp;any&nbsp;data&nbsp;available&nbsp;on&nbsp;the&nbsp;given&nbsp;stream&nbsp;without&nbsp;blocking&nbsp;and&nbsp;regardless&nbsp;of&nbsp;newlines.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;stream&nbsp;-&nbsp;A&nbsp;stream&nbsp;(like&nbsp;a&nbsp;file&nbsp;<a href="builtins.html#object">object</a>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;limit&nbsp;&lt;None/int&gt;&nbsp;-&nbsp;Max&nbsp;number&nbsp;of&nbsp;bytes&nbsp;to&nbsp;read.&nbsp;If&nbsp;None&nbsp;or&nbsp;0,&nbsp;will&nbsp;read&nbsp;as&nbsp;much&nbsp;data&nbsp;is&nbsp;available.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;forceMode&nbsp;&lt;None/mode&nbsp;string&gt;&nbsp;-&nbsp;If&nbsp;the&nbsp;stream&nbsp;<a href="builtins.html#object">object</a>&nbsp;doesn't&nbsp;specify&nbsp;a&nbsp;"mode"&nbsp;param&nbsp;(like&nbsp;a&nbsp;socket),&nbsp;this&nbsp;function&nbsp;will&nbsp;assume&nbsp;the&nbsp;encoding&nbsp;as&nbsp;"bytes".<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;you&nbsp;want&nbsp;to&nbsp;force&nbsp;a&nbsp;stream&nbsp;mode,&nbsp;use&nbsp;"t"&nbsp;for&nbsp;text&nbsp;(str),&nbsp;or&nbsp;"b"&nbsp;for&nbsp;binary&nbsp;(bytes).&nbsp;Usually&nbsp;not&nbsp;required.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@return&nbsp;-&nbsp;Any&nbsp;data&nbsp;available&nbsp;on&nbsp;the&nbsp;stream,&nbsp;or&nbsp;"None"&nbsp;if&nbsp;the&nbsp;stream&nbsp;was&nbsp;closed&nbsp;on&nbsp;the&nbsp;other&nbsp;side&nbsp;and&nbsp;all&nbsp;data&nbsp;has&nbsp;already&nbsp;been&nbsp;read.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__all__</strong> = ('nonblock_read', 'bgwrite', 'bgwrite_chunk', 'BackgroundIOPriority')</td></tr></table>
+</body></html>

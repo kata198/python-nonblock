@@ -55,3 +55,17 @@ An example usage:
 	idleTask()
 
 
+**Background Writing**
+
+TODO: Document
+
+
+Full Documentation
+------------------
+
+Can be found  http://htmlpreview.github.io/?https://github.com/kata198/python-nonblock/blob/master/doc/nonblock.html .
+
+
+Changes
+-------
+See: https://raw.githubusercontent.com/kata198/python-nonblock/master/ChangeLog

@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module nonblock.BackgroundWrite</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="nonblock.html"><font color="#ffffff">nonblock</font></a>.BackgroundWrite</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href="nonblock.html">index</a><br></font></td></tr></table>
+    <p><tt>Copyright&nbsp;(c)&nbsp;2015&nbsp;Timothy&nbsp;Savannah&nbsp;under&nbsp;terms&nbsp;of&nbsp;LGPLv2.&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;this&nbsp;LICENSE&nbsp;with&nbsp;this&nbsp;distribution.<br>
+&nbsp;<br>
+BackgroundWrite.py&nbsp;Contains&nbsp;pure-python&nbsp;functions&nbsp;for&nbsp;non-blocking&nbsp;background&nbsp;writing&nbsp;(writing&nbsp;multiple&nbsp;streams&nbsp;at&nbsp;once;&nbsp;interactive&nbsp;writing&nbsp;allowing&nbsp;a&nbsp;high&nbsp;amount&nbsp;of&nbsp;CPU&nbsp;time&nbsp;for&nbsp;calculations/other&nbsp;tasks</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="threading.html">threading</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="nonblock.BackgroundWrite.html#BackgroundIOPriority">BackgroundIOPriority</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="threading.html#Thread">threading.Thread</a>(<a href="builtins.html#object">builtins.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="nonblock.BackgroundWrite.html#BackgroundWriteProcess">BackgroundWriteProcess</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="BackgroundIOPriority">class <strong>BackgroundIOPriority</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#BackgroundIOPriority">BackgroundIOPriority</a>&nbsp;-&nbsp;Priority&nbsp;Profile&nbsp;for&nbsp;doing&nbsp;background&nbsp;writes.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;See&nbsp;__init__&nbsp;for&nbsp;fields<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="BackgroundIOPriority-__getitem__"><strong>__getitem__</strong></a>(self, key)</dt></dl>
+
+<dl><dt><a name="BackgroundIOPriority-__init__"><strong>__init__</strong></a>(self, chainPollTime, defaultChunkSize, priorityPct, charityRate=1.85, charityTime=0.0003)</dt><dd><tt>__init__&nbsp;-&nbsp;Create&nbsp;a&nbsp;<a href="#BackgroundIOPriority">BackgroundIOPriority</a>.&nbsp;<br>
+&nbsp;<br>
+Some&nbsp;terms:&nbsp;throughput&nbsp;-&nbsp;Bandwidth&nbsp;out&nbsp;(Megs&nbsp;per&nbsp;second)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interactivity&nbsp;-&nbsp;CPU&nbsp;time&nbsp;available&nbsp;for&nbsp;other&nbsp;tasks&nbsp;(calculations,&nbsp;other&nbsp;I/O,&nbsp;etc)<br>
+&nbsp;<br>
+@param&nbsp;chainPollTime&nbsp;-&nbsp;float&nbsp;&gt;&nbsp;0,&nbsp;When&nbsp;chaining,&nbsp;this&nbsp;is&nbsp;the&nbsp;sleep&nbsp;time&nbsp;between&nbsp;checking&nbsp;if&nbsp;prior&nbsp;is&nbsp;finished.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Too&nbsp;low&nbsp;and&nbsp;the&nbsp;polling&nbsp;takes&nbsp;up&nbsp;CPU&nbsp;time,&nbsp;too&nbsp;high&nbsp;and&nbsp;you'll&nbsp;lose&nbsp;a&nbsp;little&nbsp;time&nbsp;in&nbsp;between&nbsp;chained&nbsp;writes,&nbsp;while&nbsp;gaining&nbsp;interactivity&nbsp;elsewhere.<br>
+&nbsp;<br>
+@param&nbsp;defaultChunkSize&nbsp;-&nbsp;integer&nbsp;&gt;&nbsp;0,&nbsp;When&nbsp;providing&nbsp;a&nbsp;straight&nbsp;string/bytes&nbsp;to&nbsp;bgwrite&nbsp;(instead&nbsp;of&nbsp;chunking&nbsp;yourself,&nbsp;or&nbsp;using&nbsp;bgwrite_chunk)&nbsp;this&nbsp;will<br>
+&nbsp;&nbsp;&nbsp;&nbsp;be&nbsp;used&nbsp;as&nbsp;the&nbsp;max&nbsp;size&nbsp;of&nbsp;each&nbsp;chunk.&nbsp;Each&nbsp;chunk&nbsp;is&nbsp;written&nbsp;and&nbsp;a&nbsp;flush&nbsp;is&nbsp;issued&nbsp;(if&nbsp;the&nbsp;stream&nbsp;supports&nbsp;it).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Increasing&nbsp;this&nbsp;increases&nbsp;throughput&nbsp;while&nbsp;decreasing&nbsp;interactivity<br>
+&nbsp;<br>
+@param&nbsp;priorityPct&nbsp;-&nbsp;integer&nbsp;&gt;&nbsp;0,&nbsp;generally&nbsp;0-100.&nbsp;When&nbsp;this&nbsp;number&nbsp;is&nbsp;high,&nbsp;throughput&nbsp;for&nbsp;the&nbsp;operation&nbsp;will&nbsp;be&nbsp;higher.&nbsp;When&nbsp;it&nbsp;is&nbsp;lower,<br>
+&nbsp;&nbsp;&nbsp;interactivity&nbsp;is&nbsp;higher,&nbsp;e.x.&nbsp;if&nbsp;you&nbsp;have&nbsp;a&nbsp;calculation&nbsp;going&nbsp;and&nbsp;a&nbsp;write&nbsp;going,&nbsp;the&nbsp;lower&nbsp;this&nbsp;number&nbsp;the&nbsp;longer&nbsp;the&nbsp;write&nbsp;will&nbsp;take,&nbsp;but&nbsp;the&nbsp;more<br>
+&nbsp;&nbsp;&nbsp;calculations&nbsp;will&nbsp;be&nbsp;performed&nbsp;during&nbsp;that&nbsp;period.<br>
+&nbsp;<br>
+@param&nbsp;charityRate&nbsp;-&nbsp;float&nbsp;&gt;=&nbsp;0,&nbsp;Every&nbsp;couple&nbsp;of&nbsp;blocks&nbsp;written,&nbsp;the&nbsp;current&nbsp;throughput&nbsp;is&nbsp;checked&nbsp;and&nbsp;if&nbsp;things&nbsp;have&nbsp;been&nbsp;going&nbsp;swiftly<br>
+&nbsp;&nbsp;&nbsp;a&nbsp;short&nbsp;sleep&nbsp;will&nbsp;be&nbsp;incurred.&nbsp;Increasing&nbsp;this&nbsp;number&nbsp;causes&nbsp;that&nbsp;check&nbsp;to&nbsp;happen&nbsp;more&nbsp;often.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;This&nbsp;number&nbsp;is&nbsp;related&nbsp;to&nbsp;both&nbsp;the&nbsp;number&nbsp;of&nbsp;blocks&nbsp;and&nbsp;the&nbsp;priorityPct.&nbsp;The&nbsp;default,&nbsp;should&nbsp;be&nbsp;fine,&nbsp;but&nbsp;you&nbsp;may&nbsp;find&nbsp;it&nbsp;better<br>
+&nbsp;&nbsp;&nbsp;as&nbsp;a&nbsp;different&nbsp;value&nbsp;in&nbsp;certain&nbsp;cases.&nbsp;Increasing&nbsp;or&nbsp;decreasing&nbsp;could&nbsp;either&nbsp;increase&nbsp;or&nbsp;decrease&nbsp;interactivity,&nbsp;depending&nbsp;on&nbsp;those&nbsp;other&nbsp;factors.<br>
+&nbsp;&nbsp;&nbsp;Generally,&nbsp;however,&nbsp;increasing&nbsp;this&nbsp;increases&nbsp;interactivity&nbsp;and&nbsp;ability&nbsp;to&nbsp;write&nbsp;in&nbsp;parallel,&nbsp;at&nbsp;the&nbsp;cost&nbsp;of&nbsp;throughput.<br>
+&nbsp;<br>
+@param&nbsp;charityTime&nbsp;-&nbsp;float&nbsp;&gt;=&nbsp;0&nbsp;-&nbsp;Used&nbsp;to&nbsp;calculate&nbsp;the&nbsp;time&nbsp;to&nbsp;sleep&nbsp;when&nbsp;the&nbsp;charity&nbsp;period&nbsp;hits.&nbsp;The&nbsp;equation&nbsp;is:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sleepTime&nbsp;=&nbsp;charityTime&nbsp;*&nbsp;((dataWritten&nbsp;/&nbsp;delta)&nbsp;/&nbsp;(&nbsp;(dataWritten&nbsp;/&nbsp;delta)&nbsp;*&nbsp;priorityPctDec))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Where&nbsp;dataWritten&nbsp;=&nbsp;number&nbsp;of&nbsp;bytes&nbsp;written&nbsp;already,&nbsp;delta&nbsp;=&nbsp;total&nbsp;time&nbsp;spent&nbsp;writing&nbsp;(not&nbsp;including&nbsp;charity&nbsp;time&nbsp;sleeping)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;priorityPctDec&nbsp;=&nbsp;priorityPct&nbsp;/&nbsp;100.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Increasing&nbsp;this&nbsp;can&nbsp;increase&nbsp;interactivity&nbsp;and&nbsp;allow&nbsp;more&nbsp;parallel&nbsp;operations&nbsp;at&nbsp;the&nbsp;cost&nbsp;of&nbsp;throughput.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;default&nbsp;should&nbsp;be&nbsp;fine&nbsp;for&nbsp;the&nbsp;majority&nbsp;of&nbsp;cases,&nbsp;but&nbsp;it&nbsp;is&nbsp;tunable.<br>
+&nbsp;<br>
+An&nbsp;"interactivity&nbsp;score"&nbsp;is&nbsp;defined&nbsp;to&nbsp;be&nbsp;(number&nbsp;of&nbsp;calculations)&nbsp;/&nbsp;(time&nbsp;to&nbsp;write&nbsp;data).</tt></dd></dl>
+
+<dl><dt><a name="BackgroundIOPriority-__setitem__"><strong>__setitem__</strong></a>(self, key, value)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>chainPollTime</strong></dt>
+</dl>
+<dl><dt><strong>charityRate</strong></dt>
+</dl>
+<dl><dt><strong>charityTime</strong></dt>
+</dl>
+<dl><dt><strong>defaultChunkSize</strong></dt>
+</dl>
+<dl><dt><strong>priorityPct</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="BackgroundWriteProcess">class <strong>BackgroundWriteProcess</strong></a>(<a href="threading.html#Thread">threading.Thread</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;-&nbsp;A&nbsp;thread&nbsp;and&nbsp;data&nbsp;store&nbsp;representing&nbsp;a&nbsp;background&nbsp;write&nbsp;task.&nbsp;You&nbsp;should&nbsp;probably&nbsp;use&nbsp;one&nbsp;of&nbsp;the&nbsp;bgwrite*&nbsp;methods&nbsp;and&nbsp;not&nbsp;this&nbsp;directly.<br>
+&nbsp;<br>
+Attributes:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;remainingData&nbsp;&nbsp;&lt;deque&gt;&nbsp;-&nbsp;A&nbsp;queue&nbsp;representing&nbsp;the&nbsp;data&nbsp;yet&nbsp;to&nbsp;be&nbsp;written<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;startedWriting&nbsp;&lt;bool&gt;&nbsp;&nbsp;-&nbsp;Starts&nbsp;False,&nbsp;changes&nbsp;to&nbsp;True&nbsp;when&nbsp;writing&nbsp;has&nbsp;started&nbsp;(thread&nbsp;has&nbsp;started&nbsp;and&nbsp;any&nbsp;pending&nbsp;prior&nbsp;chain&nbsp;has&nbsp;completed)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;finished&nbsp;&nbsp;&nbsp;&nbsp;&lt;bool&gt;&nbsp;&nbsp;&nbsp;-&nbsp;Starts&nbsp;False,&nbsp;changes&nbsp;to&nbsp;True&nbsp;after&nbsp;writing&nbsp;has&nbsp;completed,&nbsp;and&nbsp;if&nbsp;closeWhenFinished&nbsp;is&nbsp;True&nbsp;the&nbsp;handle&nbsp;is&nbsp;also&nbsp;closed.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="nonblock.BackgroundWrite.html#BackgroundWriteProcess">BackgroundWriteProcess</a></dd>
+<dd><a href="threading.html#Thread">threading.Thread</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="BackgroundWriteProcess-__init__"><strong>__init__</strong></a>(self, fileObj, dataBlocks, closeWhenFinished=False, chainAfter=None, ioPrio=5)</dt><dd><tt>__init__&nbsp;-&nbsp;Create&nbsp;the&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;thread.&nbsp;You&nbsp;should&nbsp;probably&nbsp;use&nbsp;bgwrite&nbsp;or&nbsp;bgwrite_chunk&nbsp;instead&nbsp;of&nbsp;calling&nbsp;this&nbsp;directly.<br>
+&nbsp;<br>
+@param&nbsp;fileObj&nbsp;&lt;stream&gt;&nbsp;-&nbsp;A&nbsp;stream,&nbsp;like&nbsp;a&nbsp;file,&nbsp;to&nbsp;write&nbsp;into.&nbsp;Hopefully&nbsp;it&nbsp;supports&nbsp;flushing,&nbsp;but&nbsp;it&nbsp;is&nbsp;not&nbsp;a&nbsp;requirement.<br>
+&nbsp;<br>
+@param&nbsp;dataBlocks&nbsp;&lt;bytes/str/list&lt;bytes/str&gt;&gt;&nbsp;-&nbsp;If&nbsp;a&nbsp;list&nbsp;of&nbsp;bytes/str,&nbsp;those&nbsp;are&nbsp;treated&nbsp;as&nbsp;the&nbsp;data&nbsp;blocks,&nbsp;written&nbsp;in&nbsp;order&nbsp;with&nbsp;heuristics&nbsp;for&nbsp;interactivity&nbsp;in&nbsp;between&nbsp;blocks.&nbsp;&nbsp;If&nbsp;bytes/str&nbsp;are&nbsp;provided&nbsp;not&nbsp;in&nbsp;a&nbsp;list&nbsp;form,&nbsp;they&nbsp;will&nbsp;be&nbsp;split&nbsp;based&nbsp;on&nbsp;the&nbsp;rules&nbsp;of&nbsp;the&nbsp;associated&nbsp;#ioPrio<br>
+&nbsp;<br>
+@param&nbsp;closeWhenFinished&nbsp;&lt;bool&gt;&nbsp;-&nbsp;Default&nbsp;False.&nbsp;If&nbsp;True,&nbsp;the&nbsp;fileObj&nbsp;will&nbsp;be&nbsp;closed&nbsp;after&nbsp;writing&nbsp;has&nbsp;completed.<br>
+&nbsp;<br>
+@param&nbsp;chainAfter&nbsp;&lt;None/<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&gt;&nbsp;-&nbsp;If&nbsp;provided,&nbsp;will&nbsp;hold&nbsp;off&nbsp;writing&nbsp;until&nbsp;the&nbsp;provided&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;has&nbsp;completed&nbsp;(used&nbsp;for&nbsp;queueing&nbsp;multiple&nbsp;writes&nbsp;whilst&nbsp;retaining&nbsp;order)<br>
+&nbsp;<br>
+@param&nbsp;ioPrio&nbsp;&lt;int/<a href="#BackgroundIOPriority">BackgroundIOPriority</a>&gt;&nbsp;-&nbsp;If&nbsp;an&nbsp;integer&nbsp;(1-10),&nbsp;a&nbsp;predefined&nbsp;<a href="#BackgroundIOPriority">BackgroundIOPriority</a>&nbsp;will&nbsp;be&nbsp;used.&nbsp;1&nbsp;is&nbsp;highest&nbsp;throughput,&nbsp;10&nbsp;is&nbsp;most&nbsp;interactivity.&nbsp;You&nbsp;can&nbsp;also&nbsp;pass&nbsp;in&nbsp;your&nbsp;own&nbsp;<a href="#BackgroundIOPriority">BackgroundIOPriority</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;if&nbsp;you&nbsp;want&nbsp;to&nbsp;define&nbsp;a&nbsp;custom&nbsp;profile.<br>
+&nbsp;<br>
+&nbsp;<br>
+@raises&nbsp;ValueError&nbsp;-&nbsp;If&nbsp;ioPrio&nbsp;is&nbsp;neither&nbsp;a&nbsp;<a href="#BackgroundIOPriority">BackgroundIOPriority</a>&nbsp;nor&nbsp;integer&nbsp;1-10&nbsp;inclusive<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;If&nbsp;chainAfter&nbsp;is&nbsp;not&nbsp;a&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;or&nbsp;None</tt></dd></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-run"><strong>run</strong></a>(self)</dt><dd><tt>run&nbsp;-&nbsp;Starts&nbsp;the&nbsp;thread.&nbsp;bgwrite&nbsp;and&nbsp;bgwrite_chunk&nbsp;automatically&nbsp;start&nbsp;the&nbsp;thread.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="threading.html#Thread">threading.Thread</a>:<br>
+<dl><dt><a name="BackgroundWriteProcess-__repr__"><strong>__repr__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-getName"><strong>getName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-isAlive"><strong>isAlive</strong></a> = is_alive(self)</dt><dd><tt>Return&nbsp;whether&nbsp;the&nbsp;thread&nbsp;is&nbsp;alive.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;returns&nbsp;True&nbsp;just&nbsp;before&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;starts&nbsp;until&nbsp;just<br>
+after&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;terminates.&nbsp;The&nbsp;module&nbsp;function&nbsp;enumerate()<br>
+returns&nbsp;a&nbsp;list&nbsp;of&nbsp;all&nbsp;alive&nbsp;threads.</tt></dd></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-isDaemon"><strong>isDaemon</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-is_alive"><strong>is_alive</strong></a>(self)</dt><dd><tt>Return&nbsp;whether&nbsp;the&nbsp;thread&nbsp;is&nbsp;alive.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;returns&nbsp;True&nbsp;just&nbsp;before&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;starts&nbsp;until&nbsp;just<br>
+after&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;terminates.&nbsp;The&nbsp;module&nbsp;function&nbsp;enumerate()<br>
+returns&nbsp;a&nbsp;list&nbsp;of&nbsp;all&nbsp;alive&nbsp;threads.</tt></dd></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-join"><strong>join</strong></a>(self, timeout=None)</dt><dd><tt>Wait&nbsp;until&nbsp;the&nbsp;thread&nbsp;terminates.<br>
+&nbsp;<br>
+This&nbsp;blocks&nbsp;the&nbsp;calling&nbsp;thread&nbsp;until&nbsp;the&nbsp;thread&nbsp;whose&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;method&nbsp;is<br>
+called&nbsp;terminates&nbsp;--&nbsp;either&nbsp;normally&nbsp;or&nbsp;through&nbsp;an&nbsp;unhandled&nbsp;exception<br>
+or&nbsp;until&nbsp;the&nbsp;optional&nbsp;timeout&nbsp;occurs.<br>
+&nbsp;<br>
+When&nbsp;the&nbsp;timeout&nbsp;argument&nbsp;is&nbsp;present&nbsp;and&nbsp;not&nbsp;None,&nbsp;it&nbsp;should&nbsp;be&nbsp;a<br>
+floating&nbsp;point&nbsp;number&nbsp;specifying&nbsp;a&nbsp;timeout&nbsp;for&nbsp;the&nbsp;operation&nbsp;in&nbsp;seconds<br>
+(or&nbsp;fractions&nbsp;thereof).&nbsp;As&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;always&nbsp;returns&nbsp;None,&nbsp;you&nbsp;must&nbsp;call<br>
+<a href="#BackgroundWriteProcess-isAlive">isAlive</a>()&nbsp;after&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;to&nbsp;decide&nbsp;whether&nbsp;a&nbsp;timeout&nbsp;happened&nbsp;--&nbsp;if&nbsp;the<br>
+thread&nbsp;is&nbsp;still&nbsp;alive,&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;call&nbsp;timed&nbsp;out.<br>
+&nbsp;<br>
+When&nbsp;the&nbsp;timeout&nbsp;argument&nbsp;is&nbsp;not&nbsp;present&nbsp;or&nbsp;None,&nbsp;the&nbsp;operation&nbsp;will<br>
+block&nbsp;until&nbsp;the&nbsp;thread&nbsp;terminates.<br>
+&nbsp;<br>
+A&nbsp;thread&nbsp;can&nbsp;be&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()ed&nbsp;many&nbsp;times.<br>
+&nbsp;<br>
+<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;raises&nbsp;a&nbsp;RuntimeError&nbsp;if&nbsp;an&nbsp;attempt&nbsp;is&nbsp;made&nbsp;to&nbsp;join&nbsp;the&nbsp;current<br>
+thread&nbsp;as&nbsp;that&nbsp;would&nbsp;cause&nbsp;a&nbsp;deadlock.&nbsp;It&nbsp;is&nbsp;also&nbsp;an&nbsp;error&nbsp;to&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;a<br>
+thread&nbsp;before&nbsp;it&nbsp;has&nbsp;been&nbsp;started&nbsp;and&nbsp;attempts&nbsp;to&nbsp;do&nbsp;so&nbsp;raises&nbsp;the&nbsp;same<br>
+exception.</tt></dd></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-setDaemon"><strong>setDaemon</strong></a>(self, daemonic)</dt></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-setName"><strong>setName</strong></a>(self, name)</dt></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-start"><strong>start</strong></a>(self)</dt><dd><tt>Start&nbsp;the&nbsp;thread's&nbsp;activity.<br>
+&nbsp;<br>
+It&nbsp;must&nbsp;be&nbsp;called&nbsp;at&nbsp;most&nbsp;once&nbsp;per&nbsp;thread&nbsp;<a href="builtins.html#object">object</a>.&nbsp;It&nbsp;arranges&nbsp;for&nbsp;the<br>
+<a href="builtins.html#object">object</a>'s&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;to&nbsp;be&nbsp;invoked&nbsp;in&nbsp;a&nbsp;separate&nbsp;thread&nbsp;of&nbsp;control.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;will&nbsp;raise&nbsp;a&nbsp;RuntimeError&nbsp;if&nbsp;called&nbsp;more&nbsp;than&nbsp;once&nbsp;on&nbsp;the<br>
+same&nbsp;thread&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="threading.html#Thread">threading.Thread</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>daemon</strong></dt>
+<dd><tt>A&nbsp;boolean&nbsp;value&nbsp;indicating&nbsp;whether&nbsp;this&nbsp;thread&nbsp;is&nbsp;a&nbsp;daemon&nbsp;thread.<br>
+&nbsp;<br>
+This&nbsp;must&nbsp;be&nbsp;set&nbsp;before&nbsp;start()&nbsp;is&nbsp;called,&nbsp;otherwise&nbsp;RuntimeError&nbsp;is<br>
+raised.&nbsp;Its&nbsp;initial&nbsp;value&nbsp;is&nbsp;inherited&nbsp;from&nbsp;the&nbsp;creating&nbsp;thread;&nbsp;the<br>
+main&nbsp;thread&nbsp;is&nbsp;not&nbsp;a&nbsp;daemon&nbsp;thread&nbsp;and&nbsp;therefore&nbsp;all&nbsp;threads&nbsp;created&nbsp;in<br>
+the&nbsp;main&nbsp;thread&nbsp;default&nbsp;to&nbsp;daemon&nbsp;=&nbsp;False.<br>
+&nbsp;<br>
+The&nbsp;entire&nbsp;Python&nbsp;program&nbsp;exits&nbsp;when&nbsp;no&nbsp;alive&nbsp;non-daemon&nbsp;threads&nbsp;are<br>
+left.</tt></dd>
+</dl>
+<dl><dt><strong>ident</strong></dt>
+<dd><tt>Thread&nbsp;identifier&nbsp;of&nbsp;this&nbsp;thread&nbsp;or&nbsp;None&nbsp;if&nbsp;it&nbsp;has&nbsp;not&nbsp;been&nbsp;started.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;a&nbsp;nonzero&nbsp;integer.&nbsp;See&nbsp;the&nbsp;thread.get_ident()&nbsp;function.&nbsp;Thread<br>
+identifiers&nbsp;may&nbsp;be&nbsp;recycled&nbsp;when&nbsp;a&nbsp;thread&nbsp;exits&nbsp;and&nbsp;another&nbsp;thread&nbsp;is<br>
+created.&nbsp;The&nbsp;identifier&nbsp;is&nbsp;available&nbsp;even&nbsp;after&nbsp;the&nbsp;thread&nbsp;has&nbsp;exited.</tt></dd>
+</dl>
+<dl><dt><strong>name</strong></dt>
+<dd><tt>A&nbsp;string&nbsp;used&nbsp;for&nbsp;identification&nbsp;purposes&nbsp;only.<br>
+&nbsp;<br>
+It&nbsp;has&nbsp;no&nbsp;semantics.&nbsp;Multiple&nbsp;threads&nbsp;may&nbsp;be&nbsp;given&nbsp;the&nbsp;same&nbsp;name.&nbsp;The<br>
+initial&nbsp;name&nbsp;is&nbsp;set&nbsp;by&nbsp;the&nbsp;constructor.</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-bgwrite"><strong>bgwrite</strong></a>(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=5)</dt><dd><tt>bgwrite&nbsp;-&nbsp;Start&nbsp;a&nbsp;background&nbsp;writing&nbsp;process<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;fileObj&nbsp;&lt;stream&gt;&nbsp;-&nbsp;A&nbsp;stream&nbsp;backed&nbsp;by&nbsp;an&nbsp;fd<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;data&nbsp;&nbsp;&nbsp;&nbsp;&lt;str/bytes/list&gt;&nbsp;-&nbsp;The&nbsp;data&nbsp;to&nbsp;write.&nbsp;If&nbsp;a&nbsp;list&nbsp;is&nbsp;given,&nbsp;each&nbsp;successive&nbsp;element&nbsp;will&nbsp;be&nbsp;written&nbsp;to&nbsp;the&nbsp;fileObj&nbsp;and&nbsp;flushed.&nbsp;If&nbsp;a&nbsp;string/bytes&nbsp;is&nbsp;provided,&nbsp;it&nbsp;will&nbsp;be&nbsp;chunked&nbsp;to&nbsp;the&nbsp;default&nbsp;size&nbsp;(4096)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This&nbsp;makes&nbsp;the&nbsp;data&nbsp;available&nbsp;quicker&nbsp;on&nbsp;the&nbsp;other&nbsp;side,&nbsp;reduces&nbsp;iowait&nbsp;on&nbsp;this&nbsp;side,&nbsp;and&nbsp;thus&nbsp;increases&nbsp;interactivity&nbsp;(at&nbsp;penalty&nbsp;of&nbsp;throughput).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;you&nbsp;want&nbsp;to&nbsp;write&nbsp;in&nbsp;one&nbsp;big&nbsp;block&nbsp;for&nbsp;some&nbsp;reason&nbsp;(why&nbsp;not&nbsp;.write&nbsp;directly?),&nbsp;make&nbsp;your&nbsp;bytes/str&nbsp;into&nbsp;a&nbsp;list.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;closeWhenFinished&nbsp;&lt;bool&gt;&nbsp;-&nbsp;If&nbsp;True,&nbsp;the&nbsp;given&nbsp;fileObj&nbsp;will&nbsp;be&nbsp;closed&nbsp;after&nbsp;all&nbsp;the&nbsp;data&nbsp;has&nbsp;been&nbsp;written.&nbsp;Default&nbsp;False.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;chainAfter&nbsp;&nbsp;&lt;None/<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&gt;&nbsp;-&nbsp;If&nbsp;a&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;is&nbsp;provided&nbsp;(the&nbsp;return&nbsp;of&nbsp;bgwrite*&nbsp;functions),&nbsp;this&nbsp;data&nbsp;will&nbsp;be&nbsp;held&nbsp;for&nbsp;writing&nbsp;until&nbsp;the&nbsp;data&nbsp;associated<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with&nbsp;the&nbsp;provided&nbsp;<a href="builtins.html#object">object</a>&nbsp;has&nbsp;completed&nbsp;writing.&nbsp;Use&nbsp;this&nbsp;to&nbsp;queue&nbsp;several&nbsp;background&nbsp;writes,&nbsp;but&nbsp;retain&nbsp;order&nbsp;within&nbsp;the&nbsp;resulting&nbsp;stream.<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@return&nbsp;-&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;-&nbsp;An&nbsp;<a href="builtins.html#object">object</a>&nbsp;representing&nbsp;the&nbsp;state&nbsp;of&nbsp;this&nbsp;operation.&nbsp;@see&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a></tt></dd></dl>
+ <dl><dt><a name="-bgwrite_chunk"><strong>bgwrite_chunk</strong></a>(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=None, ioPrio=5)</dt><dd><tt>bgwrite_chunk&nbsp;-&nbsp;Chunk&nbsp;up&nbsp;the&nbsp;data&nbsp;into&nbsp;even&nbsp;#chunkSize&nbsp;blocks,&nbsp;and&nbsp;then&nbsp;pass&nbsp;it&nbsp;onto&nbsp;#bgwrite.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Use&nbsp;this&nbsp;to&nbsp;break&nbsp;up&nbsp;a&nbsp;block&nbsp;of&nbsp;data&nbsp;into&nbsp;smaller&nbsp;segments&nbsp;that&nbsp;can&nbsp;be&nbsp;written&nbsp;and&nbsp;flushed.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;smaller&nbsp;the&nbsp;chunks,&nbsp;the&nbsp;more&nbsp;interactive&nbsp;(recipient&nbsp;gets&nbsp;data&nbsp;quicker,&nbsp;iowait&nbsp;goes&nbsp;down&nbsp;for&nbsp;you)&nbsp;at&nbsp;cost&nbsp;of&nbsp;throughput.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@see&nbsp;bgwrite<br>
+&nbsp;<br>
+@param&nbsp;data&nbsp;&lt;string/bytes&gt;&nbsp;-&nbsp;The&nbsp;data&nbsp;to&nbsp;chunk&nbsp;up<br>
+&nbsp;<br>
+@param&nbsp;chunkSize&nbsp;&lt;integer&gt;&nbsp;-&nbsp;The&nbsp;max&nbsp;siZe&nbsp;of&nbsp;each&nbsp;chunk.</tt></dd></dl>
+ <dl><dt><a name="-chunk_data"><strong>chunk_data</strong></a>(data, chunkSize)</dt><dd><tt>chunk_data&nbsp;-&nbsp;Chunks&nbsp;a&nbsp;string/bytes&nbsp;into&nbsp;a&nbsp;list&nbsp;of&nbsp;string/bytes,&nbsp;each&nbsp;member&nbsp;up&nbsp;to&nbsp;#chunkSize&nbsp;in&nbsp;length.<br>
+&nbsp;<br>
+e.x.&nbsp;&nbsp;&nbsp;&nbsp;<a href="#-chunk_data">chunk_data</a>("123456789",&nbsp;2)&nbsp;=&nbsp;["12",&nbsp;"34",&nbsp;"56",&nbsp;"78",&nbsp;"9"]</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__all__</strong> = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite_chunk', 'chunk_data')</td></tr></table>
+</body></html>
