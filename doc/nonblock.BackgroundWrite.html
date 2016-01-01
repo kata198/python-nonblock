@@ -127,7 +127,7 @@ Attributes:<br>
 </dl>
 <hr>
 Methods defined here:<br>
-<dl><dt><a name="BackgroundWriteProcess-__init__"><strong>__init__</strong></a>(self, fileObj, dataBlocks, closeWhenFinished=False, chainAfter=None, ioPrio=5)</dt><dd><tt>__init__&nbsp;-&nbsp;Create&nbsp;the&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;thread.&nbsp;You&nbsp;should&nbsp;probably&nbsp;use&nbsp;bgwrite&nbsp;or&nbsp;bgwrite_chunk&nbsp;instead&nbsp;of&nbsp;calling&nbsp;this&nbsp;directly.<br>
+<dl><dt><a name="BackgroundWriteProcess-__init__"><strong>__init__</strong></a>(self, fileObj, dataBlocks, closeWhenFinished=False, chainAfter=None, ioPrio=4)</dt><dd><tt>__init__&nbsp;-&nbsp;Create&nbsp;the&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;thread.&nbsp;You&nbsp;should&nbsp;probably&nbsp;use&nbsp;bgwrite&nbsp;or&nbsp;bgwrite_chunk&nbsp;instead&nbsp;of&nbsp;calling&nbsp;this&nbsp;directly.<br>
 &nbsp;<br>
 @param&nbsp;fileObj&nbsp;&lt;stream&gt;&nbsp;-&nbsp;A&nbsp;stream,&nbsp;like&nbsp;a&nbsp;file,&nbsp;to&nbsp;write&nbsp;into.&nbsp;Hopefully&nbsp;it&nbsp;supports&nbsp;flushing,&nbsp;but&nbsp;it&nbsp;is&nbsp;not&nbsp;a&nbsp;requirement.<br>
 &nbsp;<br>
@@ -152,24 +152,26 @@ Methods defined here:<br>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
     
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><dl><dt><a name="-bgwrite"><strong>bgwrite</strong></a>(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=5)</dt><dd><tt>bgwrite&nbsp;-&nbsp;Start&nbsp;a&nbsp;background&nbsp;writing&nbsp;process<br>
+<td width="100%"><dl><dt><a name="-bgwrite"><strong>bgwrite</strong></a>(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4)</dt><dd><tt>bgwrite&nbsp;-&nbsp;Start&nbsp;a&nbsp;background&nbsp;writing&nbsp;process<br>
 &nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;fileObj&nbsp;&lt;stream&gt;&nbsp;-&nbsp;A&nbsp;stream&nbsp;backed&nbsp;by&nbsp;an&nbsp;fd<br>
 &nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;data&nbsp;&nbsp;&nbsp;&nbsp;&lt;str/bytes/list&gt;&nbsp;-&nbsp;The&nbsp;data&nbsp;to&nbsp;write.&nbsp;If&nbsp;a&nbsp;list&nbsp;is&nbsp;given,&nbsp;each&nbsp;successive&nbsp;element&nbsp;will&nbsp;be&nbsp;written&nbsp;to&nbsp;the&nbsp;fileObj&nbsp;and&nbsp;flushed.&nbsp;If&nbsp;a&nbsp;string/bytes&nbsp;is&nbsp;provided,&nbsp;it&nbsp;will&nbsp;be&nbsp;chunked&nbsp;to&nbsp;the&nbsp;default&nbsp;size&nbsp;(4096)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This&nbsp;makes&nbsp;the&nbsp;data&nbsp;available&nbsp;quicker&nbsp;on&nbsp;the&nbsp;other&nbsp;side,&nbsp;reduces&nbsp;iowait&nbsp;on&nbsp;this&nbsp;side,&nbsp;and&nbsp;thus&nbsp;increases&nbsp;interactivity&nbsp;(at&nbsp;penalty&nbsp;of&nbsp;throughput).<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;you&nbsp;want&nbsp;to&nbsp;write&nbsp;in&nbsp;one&nbsp;big&nbsp;block&nbsp;for&nbsp;some&nbsp;reason&nbsp;(why&nbsp;not&nbsp;.write&nbsp;directly?),&nbsp;make&nbsp;your&nbsp;bytes/str&nbsp;into&nbsp;a&nbsp;list.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;data&nbsp;&nbsp;&nbsp;&nbsp;&lt;str/bytes/list&gt;&nbsp;-&nbsp;The&nbsp;data&nbsp;to&nbsp;write.&nbsp;If&nbsp;a&nbsp;list&nbsp;is&nbsp;given,&nbsp;each&nbsp;successive&nbsp;element&nbsp;will&nbsp;be&nbsp;written&nbsp;to&nbsp;the&nbsp;fileObj&nbsp;and&nbsp;flushed.&nbsp;If&nbsp;a&nbsp;string/bytes&nbsp;is&nbsp;provided,&nbsp;it&nbsp;will&nbsp;be&nbsp;chunked&nbsp;according&nbsp;to&nbsp;the&nbsp;#<a href="#BackgroundIOPriority">BackgroundIOPriority</a>&nbsp;chosen.&nbsp;If&nbsp;you&nbsp;would&nbsp;like&nbsp;a&nbsp;different&nbsp;chunking&nbsp;than&nbsp;the&nbsp;chosen&nbsp;ioPrio&nbsp;provides,&nbsp;use&nbsp;#bgwrite_chunk&nbsp;function&nbsp;instead.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Chunking&nbsp;makes&nbsp;the&nbsp;data&nbsp;available&nbsp;quicker&nbsp;on&nbsp;the&nbsp;other&nbsp;side,&nbsp;reduces&nbsp;iowait&nbsp;on&nbsp;this&nbsp;side,&nbsp;and&nbsp;thus&nbsp;increases&nbsp;interactivity&nbsp;(at&nbsp;penalty&nbsp;of&nbsp;throughput).<br>
 &nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;closeWhenFinished&nbsp;&lt;bool&gt;&nbsp;-&nbsp;If&nbsp;True,&nbsp;the&nbsp;given&nbsp;fileObj&nbsp;will&nbsp;be&nbsp;closed&nbsp;after&nbsp;all&nbsp;the&nbsp;data&nbsp;has&nbsp;been&nbsp;written.&nbsp;Default&nbsp;False.<br>
 &nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;chainAfter&nbsp;&nbsp;&lt;None/<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&gt;&nbsp;-&nbsp;If&nbsp;a&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;is&nbsp;provided&nbsp;(the&nbsp;return&nbsp;of&nbsp;bgwrite*&nbsp;functions),&nbsp;this&nbsp;data&nbsp;will&nbsp;be&nbsp;held&nbsp;for&nbsp;writing&nbsp;until&nbsp;the&nbsp;data&nbsp;associated<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with&nbsp;the&nbsp;provided&nbsp;<a href="builtins.html#object">object</a>&nbsp;has&nbsp;completed&nbsp;writing.&nbsp;Use&nbsp;this&nbsp;to&nbsp;queue&nbsp;several&nbsp;background&nbsp;writes,&nbsp;but&nbsp;retain&nbsp;order&nbsp;within&nbsp;the&nbsp;resulting&nbsp;stream.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;chainAfter&nbsp;&nbsp;&lt;None/<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&gt;&nbsp;-&nbsp;If&nbsp;a&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;is&nbsp;provided&nbsp;(the&nbsp;return&nbsp;of&nbsp;bgwrite*&nbsp;functions),&nbsp;this&nbsp;data&nbsp;will&nbsp;be&nbsp;held&nbsp;for&nbsp;writing&nbsp;until&nbsp;the&nbsp;data&nbsp;associated&nbsp;with&nbsp;the&nbsp;provided&nbsp;<a href="builtins.html#object">object</a>&nbsp;has&nbsp;completed&nbsp;writing.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Use&nbsp;this&nbsp;to&nbsp;queue&nbsp;several&nbsp;background&nbsp;writes,&nbsp;but&nbsp;retain&nbsp;order&nbsp;within&nbsp;the&nbsp;resulting&nbsp;stream.<br>
 &nbsp;<br>
 &nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;@return&nbsp;-&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a>&nbsp;-&nbsp;An&nbsp;<a href="builtins.html#object">object</a>&nbsp;representing&nbsp;the&nbsp;state&nbsp;of&nbsp;this&nbsp;operation.&nbsp;@see&nbsp;<a href="#BackgroundWriteProcess">BackgroundWriteProcess</a></tt></dd></dl>
- <dl><dt><a name="-bgwrite_chunk"><strong>bgwrite_chunk</strong></a>(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=None, ioPrio=5)</dt><dd><tt>bgwrite_chunk&nbsp;-&nbsp;Chunk&nbsp;up&nbsp;the&nbsp;data&nbsp;into&nbsp;even&nbsp;#chunkSize&nbsp;blocks,&nbsp;and&nbsp;then&nbsp;pass&nbsp;it&nbsp;onto&nbsp;#bgwrite.<br>
+ <dl><dt><a name="-bgwrite_chunk"><strong>bgwrite_chunk</strong></a>(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=None, ioPrio=4)</dt><dd><tt>bgwrite_chunk&nbsp;-&nbsp;Chunk&nbsp;up&nbsp;the&nbsp;data&nbsp;into&nbsp;even&nbsp;#chunkSize&nbsp;blocks,&nbsp;and&nbsp;then&nbsp;pass&nbsp;it&nbsp;onto&nbsp;#bgwrite.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Use&nbsp;this&nbsp;to&nbsp;break&nbsp;up&nbsp;a&nbsp;block&nbsp;of&nbsp;data&nbsp;into&nbsp;smaller&nbsp;segments&nbsp;that&nbsp;can&nbsp;be&nbsp;written&nbsp;and&nbsp;flushed.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;smaller&nbsp;the&nbsp;chunks,&nbsp;the&nbsp;more&nbsp;interactive&nbsp;(recipient&nbsp;gets&nbsp;data&nbsp;quicker,&nbsp;iowait&nbsp;goes&nbsp;down&nbsp;for&nbsp;you)&nbsp;at&nbsp;cost&nbsp;of&nbsp;throughput.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bgwrite&nbsp;will&nbsp;automatically&nbsp;chunk&nbsp;according&nbsp;to&nbsp;the&nbsp;given&nbsp;ioPrio,&nbsp;but&nbsp;you&nbsp;can&nbsp;use&nbsp;this&nbsp;for&nbsp;finer-tuned&nbsp;control.<br>
 &nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;@see&nbsp;bgwrite<br>
 &nbsp;<br>

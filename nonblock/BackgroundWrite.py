@@ -15,20 +15,20 @@ from collections import deque
 
 __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite_chunk', 'chunk_data')
 
-def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=5):
+def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
     '''
         bgwrite - Start a background writing process
 
             @param fileObj <stream> - A stream backed by an fd
 
-            @param data    <str/bytes/list> - The data to write. If a list is given, each successive element will be written to the fileObj and flushed. If a string/bytes is provided, it will be chunked to the default size (4096)
-               This makes the data available quicker on the other side, reduces iowait on this side, and thus increases interactivity (at penalty of throughput).
-               If you want to write in one big block for some reason (why not .write directly?), make your bytes/str into a list.
+            @param data    <str/bytes/list> - The data to write. If a list is given, each successive element will be written to the fileObj and flushed. If a string/bytes is provided, it will be chunked according to the #BackgroundIOPriority chosen. If you would like a different chunking than the chosen ioPrio provides, use #bgwrite_chunk function instead.
+
+               Chunking makes the data available quicker on the other side, reduces iowait on this side, and thus increases interactivity (at penalty of throughput).
 
             @param closeWhenFinished <bool> - If True, the given fileObj will be closed after all the data has been written. Default False.
 
-            @param chainAfter  <None/BackgroundWriteProcess> - If a BackgroundWriteProcess object is provided (the return of bgwrite* functions), this data will be held for writing until the data associated
-                with the provided object has completed writing. Use this to queue several background writes, but retain order within the resulting stream.
+            @param chainAfter  <None/BackgroundWriteProcess> - If a BackgroundWriteProcess object is provided (the return of bgwrite* functions), this data will be held for writing until the data associated with the provided object has completed writing.
+            Use this to queue several background writes, but retain order within the resulting stream.
 
 
             @return - BackgroundWriteProcess - An object representing the state of this operation. @see BackgroundWriteProcess
@@ -39,11 +39,13 @@ def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=5):
 
     return thread
 
-def bgwrite_chunk(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=None, ioPrio=5):
+def bgwrite_chunk(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=None, ioPrio=4):
     '''
         bgwrite_chunk - Chunk up the data into even #chunkSize blocks, and then pass it onto #bgwrite.
             Use this to break up a block of data into smaller segments that can be written and flushed.
             The smaller the chunks, the more interactive (recipient gets data quicker, iowait goes down for you) at cost of throughput.
+
+            bgwrite will automatically chunk according to the given ioPrio, but you can use this for finer-tuned control.
 
             @see bgwrite
 
@@ -123,16 +125,16 @@ _SIZE_MEG = 1024 * 1024
 
 # BG_IO_PRIOS - Predefined I/O priorities, 1-10. The lower the number, the more throughput at the cost of interactivity
 BG_IO_PRIOS = {
-    1  : BackgroundIOPriority(.0009, _SIZE_MEG * 5,     100), # Most throughput, least interactivity, but still very interactive.
-    2  : BackgroundIOPriority(.0009, _SIZE_MEG * 4,      90),
-    3  : BackgroundIOPriority(.0015, _SIZE_MEG * 3,      80),
-    4  : BackgroundIOPriority(.0015, _SIZE_MEG * 2,      70),
-    5  : BackgroundIOPriority(.0019, _SIZE_MEG,          60),
-    6  : BackgroundIOPriority(.0019, _SIZE_MEG * .5,     50),
-    7  : BackgroundIOPriority(.0024, _SIZE_MEG * .25,    40),
-    8  : BackgroundIOPriority(.0024, _SIZE_MEG * .1699,  30),
-    9  : BackgroundIOPriority(.0031, _SIZE_MEG * .11,    20),
-    10 : BackgroundIOPriority(.0100, 4096,               10), # Least throughput, most interactivity, very little throughput
+    1  : BackgroundIOPriority(.0009, _SIZE_MEG * 5,    100), # Most throughput, least interactivity, but still very interactive.
+    2  : BackgroundIOPriority(.0009, _SIZE_MEG * 4,     90),
+    3  : BackgroundIOPriority(.0015, _SIZE_MEG * 3,     80),
+    4  : BackgroundIOPriority(.0015, _SIZE_MEG * 2,     70),
+    5  : BackgroundIOPriority(.0019, _SIZE_MEG * 1.25,  65),
+    6  : BackgroundIOPriority(.0019, _SIZE_MEG * .6,   50),
+    7  : BackgroundIOPriority(.0024, _SIZE_MEG * .4,    40),
+    8  : BackgroundIOPriority(.0024, _SIZE_MEG * .25,   30),
+    9  : BackgroundIOPriority(.0031, _SIZE_MEG * .175,  30),
+    10 : BackgroundIOPriority(.0100, _SIZE_MEG * .1,    25), # Least throughput, most interactivity, very little throughput
 }
 
 
@@ -150,7 +152,7 @@ class BackgroundWriteProcess(threading.Thread):
     '''
 # Design question: What about errors?
 
-    def __init__(self, fileObj, dataBlocks, closeWhenFinished=False, chainAfter=None, ioPrio=5):
+    def __init__(self, fileObj, dataBlocks, closeWhenFinished=False, chainAfter=None, ioPrio=4):
         '''
             __init__ - Create the BackgroundWriteProcess thread. You should probably use bgwrite or bgwrite_chunk instead of calling this directly.
 
