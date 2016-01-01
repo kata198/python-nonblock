@@ -1,2 +1,14 @@
+* 2.0.0 Dec 31 2015
+- Implement interactive non-blocking background writing. This allows you to
+fork writing to files (otherwise a blocking operation) into the background,
+with a configurable I/O priority associated. The lower the priority number, the
+higher the throughput, but the higher that number, the higher interactivity
+(throughput is throttled and other tasks, e.g. cpu-bound calculations, get
+more time and priority. There are heuristics going on here, and the ability to
+chain multiple datasets to the same file, so this is
+more/better than just throwing a thread into the background.
+
+- Split the read portion into read.py and out of __init__.py
+
 * 1.0.0 Dec 18 2015 
 - Initial Release, nonblocking read function - nonblock_read
