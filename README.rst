@@ -86,7 +86,52 @@ An example usage:
 
 **Background Writing**
 
-TODO: Document
+python-nonblock provides a clean way to write to streams in a non-blocking, configurable, and interactive-supporting way.
+
+
+The core of this functionality comes from the bgwrite function:
+
+
+	def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
+
+		'''
+
+			bgwrite - Start a background writing process
+
+
+				@param fileObj <stream> - A stream backed by an fd
+
+
+				@param data    <str/bytes/list> - The data to write. If a list is given, each successive element will be written to the fileObj and flushed. If a string/bytes is provided, it will be chunked according to the #BackgroundIOPriority chosen. If you would like a different chunking than the chosen ioPrio provides, use #bgwrite_chunk function instead.
+
+
+				   Chunking makes the data available quicker on the other side, reduces iowait on this side, and thus increases interactivity (at penalty of throughput).
+
+
+				@param closeWhenFinished <bool> - If True, the given fileObj will be closed after all the data has been written. Default False.
+
+
+				@param chainAfter  <None/BackgroundWriteProcess> - If a BackgroundWriteProcess object is provided (the return of bgwrite* functions), this data will be held for writing until the data associated with the provided object has completed writing.
+
+				Use this to queue several background writes, but retain order within the resulting stream.
+
+
+
+				@return - BackgroundWriteProcess - An object representing the state of this operation. @see BackgroundWriteProcess
+		'''
+
+
+You can create a queue of data to be written to the given stream by using the "chainAfter" param, providing the return of a previous "bgwrite" or "bgwrite\_chunk" function. This will wait for the previous bgwrite to complete before starting the next.
+
+
+bgwrite will write data in blocks and perform heuristics in order to provide interactivity to other running threads and calculations, based on either a predefined BackgroundIOPriority, or you can provide a custom BackgroundIOPriority (see "Full Documentation" below for the parameters)
+
+
+*Example*
+
+
+An example of a script using several bgwrites in addition to performing CPU-bound calculations can be found at: http://htmlpreview.github.io/?https://github.com/kata198/python-nonblock/blob/master/testWrite.py
+
 
 
 Full Documentation
