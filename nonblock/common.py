@@ -7,28 +7,28 @@ def detect_stream_mode(stream):
 
             @param stream <object> - A stream object
 
-            If "mode" is present, that will be used. 
+            If "mode" is present, that will be used.
 
-        @return <str> - 'b' for bytes, 't' for text.
+        @return <type> - "Bytes" type or "str" type
     '''
     # If "Mode" is present, pull from that
     if hasattr(stream, 'mode'):
         if 'b' in stream.mode:
-            return 'b'
+            return bytes
         elif 't' in stream.mode:
-            return 't'
+            return str
 
     # Read a zero-length string off the device 
     if hasattr(stream, 'read'):
         zeroStr = stream.read(0)
         if type(zeroStr) is str:
-            return 't'
-        return 'b'
+            return str
+        return bytes
     elif hasattr(stream, 'recv'):
         zeroStr = stream.recv(0)
         if type(zeroStr) is str:
-            return 't'
-        return 'b'
+            return str
+        return bytes
 
     # Cannot figure it out, assume bytes.
-    return 'b'
+    return bytes

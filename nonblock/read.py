@@ -29,18 +29,15 @@ def nonblock_read(stream, limit=None, forceMode=None):
 
     if forceMode:
         if 'b' in forceMode:
-            streamMode = 'b'
+            streamMode = bytes
         elif 't' in forceMode:
-            streamMode = 't'
+            streamMode = str
         else:
             streamMode = detect_stream_mode(stream)
     else:
         streamMode = detect_stream_mode(stream)
 
-    if streamMode == 'b':
-        emptyStr = b''
-    else:
-        emptyStr = ''
+    emptyStr = streamMode()
 
     # Determine if our function is "read" (file-like objects) or "recv" (socket-like objects)
     if hasattr(stream, 'read'):
