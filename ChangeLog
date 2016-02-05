@@ -6,6 +6,10 @@ streams.
 nonblock.common.detect_stream_mode). You should never need to provide an
 explicit mode now, but the param and functionality will remain for
 backwards compatibility
+- FEATURE: Add background reading through "background_read(stream,
+blockSizeLimit, pollTime)". This returns an object which will automatically be
+populated with data by a thread which is started and runs in the background.
+See docstring for more information.
 
 * 2.0.0 Dec 31 2015
 - Implement interactive non-blocking background writing. This allows you to

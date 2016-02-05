@@ -10,7 +10,9 @@ from .read import nonblock_read
 
 from .BackgroundWrite import bgwrite, bgwrite_chunk, BackgroundIOPriority
 
-__all__ = ('nonblock_read', 'bgwrite', 'bgwrite_chunk', 'BackgroundIOPriority')
+from .BackgroundRead import background_read
+
+__all__ = ('nonblock_read', 'bgwrite', 'bgwrite_chunk', 'BackgroundIOPriority', 'background_read')
 
 __version__ = '3.0.0'
 __version_tuple = (3, 0, 0)
