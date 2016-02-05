@@ -16,7 +16,7 @@ from .common import detect_stream_mode
 
 __all__ = ('BackgroundReadData', 'background_read' )
 
-def background_read(stream, blockSizeLimit=65535, pollTime=.03):
+def background_read(stream, blockSizeLimit=65535, pollTime=.03, closeStream=True):
     '''
         background_read - Start a thread which will read from the given stream in a non-blocking fashion, and automatically populate data in the returned object.
 
@@ -29,6 +29,8 @@ def background_read(stream, blockSizeLimit=65535, pollTime=.03):
             @param pollTime <float> - Default .03 (30ms) After all available data has been read from the stream, wait this many seconds before checking again for more data.
                 
                 A low number here means a high priority, i.e. more cycles will be devoted to checking and collecting the background data. Since this is a non-blocking read, this value is the "block", which will return execution context to the remainder of the application. The default of 100ms should be fine in most cases. If it's really idle data collection, you may want to try a value of 1 second.
+
+            @param closeStream <bool> - Default True. If True, the "close" method on the stream object will be called when the other side has closed and all data has been read.
 
 
 
@@ -60,7 +62,7 @@ def background_read(stream, blockSizeLimit=65535, pollTime=.03):
     streamMode = detect_stream_mode(stream)
     results = BackgroundReadData(streamMode)
 
-    thread = threading.Thread(target=_do_background_read, args=(stream, blockSizeLimit, pollTime, results))
+    thread = threading.Thread(target=_do_background_read, args=(stream, blockSizeLimit, pollTime, closeStream, results))
     thread.daemon = True # Automatically terminate this thread if program closes
     thread.start()
 
@@ -107,7 +109,7 @@ class BackgroundReadData(object):
 
 
 
-def _do_background_read(stream, blockSizeLimit, pollTime, results):
+def _do_background_read(stream, blockSizeLimit, pollTime, closeStream, results):
     '''
         _do_background_read - Worker functon for the background read thread.
 
@@ -128,5 +130,8 @@ def _do_background_read(stream, blockSizeLimit, pollTime, results):
     except Exception as e:
         results.error = e
         return
+
+    if closeStream and hasattr(stream, 'close'):
+        stream.close()
 
     results.isFinished = True
