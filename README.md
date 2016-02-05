@@ -17,14 +17,13 @@ When the stream is closed on the other side, and you have already read all the d
 
 	def nonblock_read(stream, limit=None, forceMode=None):
 		'''
-			nonblock_read - Read any data available on the given stream without blocking and regardless of newlines.
+			nonblock_read - Read any data available on the given stream (file, socket, etc) without blocking and regardless of newlines.
 
-				@param stream - A stream (like a file object)
+				@param stream - A stream (like a file object or a socket)
 				@param limit <None/int> - Max number of bytes to read. If None or 0, will read as much data is available.
-				@param forceMode <None/mode string> - If the stream object doesn't specify a "mode" param (like a socket), this function will assume the encoding as "bytes".
-														If you want to force a stream mode, use "t" for text (str), or "b" for binary (bytes). Usually not required.
+				@param forceMode <None/mode string> - Default None. Will be autodetected if None. If you want to explicitly force a mode, provide 'b' for binary (bytes) or 't' for text (Str). This determines the return type.
 
-				@return - Any data available on the stream, or "None" if the stream was closed on the other side and all data has already been read.
+				@return <str or bytes depending on stream's mode> - Any data available on the stream, or "None" if the stream was closed on the other side and all data has already been read.
 		'''
 
 

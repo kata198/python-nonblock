@@ -1,5 +1,11 @@
 * 3.0.0 Feb 5 2016
-- Fix typo in MANIFEST.in
+- BUGFIX: Fix typo in MANIFEST.in
+- FEATURE: Update nonblock_read so it works with socket-like objects as well as file-like
+streams.
+- FEATURE: Improve the mode autodetect (which can be used standalone via
+nonblock.common.detect_stream_mode). You should never need to provide an
+explicit mode now, but the param and functionality will remain for
+backwards compatibility
 
 * 2.0.0 Dec 31 2015
 - Implement interactive non-blocking background writing. This allows you to

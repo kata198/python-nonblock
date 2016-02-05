@@ -10,50 +10,60 @@
 import select
 import sys
 
+from .common import detect_stream_mode
+
 __all__ = ('nonblock_read', )
 
 def nonblock_read(stream, limit=None, forceMode=None):
     '''
-        nonblock_read - Read any data available on the given stream without blocking and regardless of newlines.
+        nonblock_read - Read any data available on the given stream (file, socket, etc) without blocking and regardless of newlines.
 
-            @param stream - A stream (like a file object)
+            @param stream <object> - A stream (like a file object or a socket)
             @param limit <None/int> - Max number of bytes to read. If None or 0, will read as much data is available.
-            @param forceMode <None/mode string> - If the stream object doesn't specify a "mode" param (like a socket), this function will assume the encoding as "bytes".
-                                                    If you want to force a stream mode, use "t" for text (str), or "b" for binary (bytes). Usually not required.
+            @param forceMode <None/mode string> - Default None. Will be autodetected if None. If you want to explicitly force a mode, provide 'b' for binary (bytes) or 't' for text (Str). This determines the return type.
 
-            @return - Any data available on the stream, or "None" if the stream was closed on the other side and all data has already been read.
+            @return <str or bytes depending on stream's mode> - Any data available on the stream, or "None" if the stream was closed on the other side and all data has already been read.
     '''
     bytesRead = 0
     ret = []
 
-    if not forceMode:
-        # If "Mode" is present, require 'b' for bytes mode.
-        if hasattr(stream, 'mode'):
-            if 'b' in stream.mode:
-                emptyStr = b''
-            else:
-                emptyStr = ''
-        else:
-            # No "mode" param, and no provided mode, so assume bytes
-            emptyStr = b''
-    else:
-        # Provided mode, if they provided "b", 
+    if forceMode:
         if 'b' in forceMode:
-            emptyStr = b''
+            streamMode = 'b'
+        elif 't' in forceMode:
+            streamMode = 't'
         else:
-            emptyStr = ''
-                
+            streamMode = detect_stream_mode(stream)
+    else:
+        streamMode = detect_stream_mode(stream)
+
+    if streamMode == 'b':
+        emptyStr = b''
+    else:
+        emptyStr = ''
+
+    # Determine if our function is "read" (file-like objects) or "recv" (socket-like objects)
+    if hasattr(stream, 'read'):
+        readByte = lambda : stream.read(1)
+    elif hasattr(stream, 'recv'):
+        readByte = lambda : stream.recv(1)
+    else:
+        raise ValueError('Cannot determine how to read from provided stream, %s.' %(repr(stream),))
+
     while True:
-        # Check if data on stream is immediatly available
+        # Check if data on stream is immediately available
         (readyToRead, junk1, junk2) = select.select([stream], [], [], .000001)
+
         if not readyToRead:
             break
 
-        c = stream.read(1)
+        c = readByte()
         if c == emptyStr:
             # Stream has been closed
             if not ret:
+                # All data already read, so return None
                 return None
+            # Otherwise, return data collected. Next call will return None.
             break
 
         bytesRead += 1
@@ -63,4 +73,5 @@ def nonblock_read(stream, limit=None, forceMode=None):
             break
 
     return emptyStr.join(ret)
+
 
