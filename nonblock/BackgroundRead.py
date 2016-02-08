@@ -14,11 +14,11 @@ from .read import nonblock_read
 
 from .common import detect_stream_mode
 
-__all__ = ('BackgroundReadData', 'background_read' )
+__all__ = ('BackgroundReadData', 'bgread' )
 
-def background_read(stream, blockSizeLimit=65535, pollTime=.03, closeStream=True):
+def bgread(stream, blockSizeLimit=65535, pollTime=.03, closeStream=True):
     '''
-        background_read - Start a thread which will read from the given stream in a non-blocking fashion, and automatically populate data in the returned object.
+        bgread - Start a thread which will read from the given stream in a non-blocking fashion, and automatically populate data in the returned object.
 
             @param stream <object> - A stream on which to read. Socket, file, etc.
 
@@ -51,6 +51,10 @@ def background_read(stream, blockSizeLimit=65535, pollTime=.03, closeStream=True
         pollTime = float(pollTime)
     except ValueError:
         raise ValueError('Provided poll time must be a float.')
+
+    if not hasattr(stream, 'read') and not hasattr(stream, 'recv'):
+        raise ValueError('Cannot read off provided stream, does not implement "read" or "recv"')
+
     if blockSizeLimit is not None:
         try:
             blockSizeLimit = int(blockSizeLimit)
@@ -62,7 +66,7 @@ def background_read(stream, blockSizeLimit=65535, pollTime=.03, closeStream=True
     streamMode = detect_stream_mode(stream)
     results = BackgroundReadData(streamMode)
 
-    thread = threading.Thread(target=_do_background_read, args=(stream, blockSizeLimit, pollTime, closeStream, results))
+    thread = threading.Thread(target=_do_bgread, args=(stream, blockSizeLimit, pollTime, closeStream, results))
     thread.daemon = True # Automatically terminate this thread if program closes
     thread.start()
 
@@ -71,7 +75,7 @@ def background_read(stream, blockSizeLimit=65535, pollTime=.03, closeStream=True
 class BackgroundReadData(object):
     '''
 
-        BackgroundReadData - An object returned by the background_read function. This object is automatically populated in the background by a thread with data read off the stream.
+        BackgroundReadData - An object returned by the bgread function. This object is automatically populated in the background by a thread with data read off the stream.
 
         It contains the following attributes:
 
@@ -109,9 +113,9 @@ class BackgroundReadData(object):
 
 
 
-def _do_background_read(stream, blockSizeLimit, pollTime, closeStream, results):
+def _do_bgread(stream, blockSizeLimit, pollTime, closeStream, results):
     '''
-        _do_background_read - Worker functon for the background read thread.
+        _do_bgread - Worker functon for the background read thread.
 
         @param stream <object> - Stream to read until closed
         @param results <BackgroundReadData>
