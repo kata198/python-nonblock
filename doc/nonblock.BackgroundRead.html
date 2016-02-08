@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module nonblock.BackgroundRead</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="nonblock.html"><font color="#ffffff">nonblock</font></a>.BackgroundRead</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href="nonblock.html">index</a></font></td></tr></table>
+    <p><tt>Copyright&nbsp;(c)&nbsp;2015-2016&nbsp;Timothy&nbsp;Savannah&nbsp;under&nbsp;terms&nbsp;of&nbsp;LGPLv2.&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;this&nbsp;LICENSE&nbsp;with&nbsp;this&nbsp;distribution.<br>
+&nbsp;<br>
+read.py&nbsp;Contains&nbsp;pure-python&nbsp;functions&nbsp;for&nbsp;non-blocking&nbsp;reads&nbsp;in&nbsp;python</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="threading.html">threading</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="nonblock.BackgroundRead.html#BackgroundReadData">BackgroundReadData</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="BackgroundReadData">class <strong>BackgroundReadData</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#BackgroundReadData">BackgroundReadData</a>&nbsp;-&nbsp;An&nbsp;<a href="builtins.html#object">object</a>&nbsp;returned&nbsp;by&nbsp;the&nbsp;bgread&nbsp;function.&nbsp;This&nbsp;<a href="builtins.html#object">object</a>&nbsp;is&nbsp;automatically&nbsp;populated&nbsp;in&nbsp;the&nbsp;background&nbsp;by&nbsp;a&nbsp;thread&nbsp;with&nbsp;data&nbsp;read&nbsp;off&nbsp;the&nbsp;stream.<br>
+&nbsp;<br>
+It&nbsp;contains&nbsp;the&nbsp;following&nbsp;attributes:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;blocks&nbsp;-&nbsp;The&nbsp;raw&nbsp;non-zero&nbsp;length&nbsp;blocks&nbsp;read&nbsp;from&nbsp;the&nbsp;stream,&nbsp;in&nbsp;order.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;-&nbsp;A&nbsp;calculated&nbsp;property,&nbsp;which&nbsp;is&nbsp;a&nbsp;bytes/str&nbsp;(depending&nbsp;on&nbsp;stream&nbsp;mode).&nbsp;It&nbsp;is&nbsp;the&nbsp;joining&nbsp;of&nbsp;all&nbsp;the&nbsp;read&nbsp;blocks,&nbsp;and&nbsp;contains&nbsp;all&nbsp;the&nbsp;data&nbsp;read&nbsp;to-date.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;isFinished&nbsp;-&nbsp;starts&nbsp;False,&nbsp;and&nbsp;becomes&nbsp;True&nbsp;after&nbsp;all&nbsp;data&nbsp;has&nbsp;been&nbsp;read&nbsp;from&nbsp;the&nbsp;stream.&nbsp;Will&nbsp;remain&nbsp;False&nbsp;if&nbsp;there&nbsp;is&nbsp;an&nbsp;exception&nbsp;raised&nbsp;during&nbsp;I/O<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;error&nbsp;-&nbsp;starts&nbsp;None,&nbsp;and&nbsp;is&nbsp;set&nbsp;to&nbsp;any&nbsp;exception&nbsp;that&nbsp;is&nbsp;raised&nbsp;during&nbsp;reading&nbsp;(which&nbsp;will&nbsp;also&nbsp;terminate&nbsp;the&nbsp;thread)<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="BackgroundReadData-__init__"><strong>__init__</strong></a>(self, dataType)</dt></dl>
+
+<dl><dt><a name="BackgroundReadData-addBlock"><strong>addBlock</strong></a>(self, block)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>data</strong></dt>
+<dd><tt>data&nbsp;-&nbsp;property&nbsp;to&nbsp;get&nbsp;the&nbsp;data&nbsp;as&nbsp;a&nbsp;string&nbsp;or&nbsp;bytes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Use&nbsp;"blocks"&nbsp;to&nbsp;access&nbsp;the&nbsp;individual&nbsp;blocks&nbsp;of&nbsp;data<br>
+&nbsp;<br>
+@return&nbsp;&lt;str&nbsp;or&nbsp;bytes&gt;&nbsp;-&nbsp;All&nbsp;data&nbsp;currently&nbsp;read,&nbsp;as&nbsp;a&nbsp;string&nbsp;or&nbsp;bytes&nbsp;(depending&nbsp;on&nbsp;the&nbsp;dataType)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-bgread"><strong>bgread</strong></a>(stream, blockSizeLimit=65535, pollTime=0.03, closeStream=True)</dt><dd><tt>bgread&nbsp;-&nbsp;Start&nbsp;a&nbsp;thread&nbsp;which&nbsp;will&nbsp;read&nbsp;from&nbsp;the&nbsp;given&nbsp;stream&nbsp;in&nbsp;a&nbsp;non-blocking&nbsp;fashion,&nbsp;and&nbsp;automatically&nbsp;populate&nbsp;data&nbsp;in&nbsp;the&nbsp;returned&nbsp;<a href="builtins.html#object">object</a>.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;stream&nbsp;&lt;<a href="builtins.html#object">object</a>&gt;&nbsp;-&nbsp;A&nbsp;stream&nbsp;on&nbsp;which&nbsp;to&nbsp;read.&nbsp;Socket,&nbsp;file,&nbsp;etc.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;blockSizeLimit&nbsp;&lt;None/int&gt;&nbsp;-&nbsp;Number&nbsp;of&nbsp;bytes.&nbsp;Default&nbsp;65535.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;None,&nbsp;the&nbsp;stream&nbsp;will&nbsp;be&nbsp;read&nbsp;from&nbsp;until&nbsp;there&nbsp;is&nbsp;no&nbsp;more&nbsp;available&nbsp;data&nbsp;(not&nbsp;closed,&nbsp;but&nbsp;you've&nbsp;read&nbsp;all&nbsp;that's&nbsp;been&nbsp;flushed&nbsp;to&nbsp;straem).&nbsp;This&nbsp;is&nbsp;okay&nbsp;for&nbsp;smaller&nbsp;datasets,&nbsp;but&nbsp;this&nbsp;number&nbsp;effectively&nbsp;controls&nbsp;the&nbsp;amount&nbsp;of&nbsp;CPU&nbsp;time&nbsp;spent&nbsp;in&nbsp;I/O&nbsp;on&nbsp;this&nbsp;stream&nbsp;VS&nbsp;everything&nbsp;else&nbsp;in&nbsp;your&nbsp;application.&nbsp;The&nbsp;default&nbsp;of&nbsp;65535&nbsp;bytes&nbsp;is&nbsp;a&nbsp;fair&nbsp;amount&nbsp;of&nbsp;data.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;pollTime&nbsp;&lt;float&gt;&nbsp;-&nbsp;Default&nbsp;.03&nbsp;(30ms)&nbsp;After&nbsp;all&nbsp;available&nbsp;data&nbsp;has&nbsp;been&nbsp;read&nbsp;from&nbsp;the&nbsp;stream,&nbsp;wait&nbsp;this&nbsp;many&nbsp;seconds&nbsp;before&nbsp;checking&nbsp;again&nbsp;for&nbsp;more&nbsp;data.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;low&nbsp;number&nbsp;here&nbsp;means&nbsp;a&nbsp;high&nbsp;priority,&nbsp;i.e.&nbsp;more&nbsp;cycles&nbsp;will&nbsp;be&nbsp;devoted&nbsp;to&nbsp;checking&nbsp;and&nbsp;collecting&nbsp;the&nbsp;background&nbsp;data.&nbsp;Since&nbsp;this&nbsp;is&nbsp;a&nbsp;non-blocking&nbsp;read,&nbsp;this&nbsp;value&nbsp;is&nbsp;the&nbsp;"block",&nbsp;which&nbsp;will&nbsp;return&nbsp;execution&nbsp;context&nbsp;to&nbsp;the&nbsp;remainder&nbsp;of&nbsp;the&nbsp;application.&nbsp;The&nbsp;default&nbsp;of&nbsp;100ms&nbsp;should&nbsp;be&nbsp;fine&nbsp;in&nbsp;most&nbsp;cases.&nbsp;If&nbsp;it's&nbsp;really&nbsp;idle&nbsp;data&nbsp;collection,&nbsp;you&nbsp;may&nbsp;want&nbsp;to&nbsp;try&nbsp;a&nbsp;value&nbsp;of&nbsp;1&nbsp;second.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;closeStream&nbsp;&lt;bool&gt;&nbsp;-&nbsp;Default&nbsp;True.&nbsp;If&nbsp;True,&nbsp;the&nbsp;"close"&nbsp;method&nbsp;on&nbsp;the&nbsp;stream&nbsp;<a href="builtins.html#object">object</a>&nbsp;will&nbsp;be&nbsp;called&nbsp;when&nbsp;the&nbsp;other&nbsp;side&nbsp;has&nbsp;closed&nbsp;and&nbsp;all&nbsp;data&nbsp;has&nbsp;been&nbsp;read.<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+NOTES&nbsp;--<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blockSizeLimit&nbsp;/&nbsp;pollTime&nbsp;is&nbsp;your&nbsp;effective&nbsp;max-throughput.&nbsp;Real&nbsp;throughput&nbsp;will&nbsp;be&nbsp;lower&nbsp;than&nbsp;this&nbsp;number,&nbsp;as&nbsp;the&nbsp;actual&nbsp;throughput&nbsp;is&nbsp;be&nbsp;defined&nbsp;by:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T&nbsp;=&nbsp;(blockSizeLimit&nbsp;/&nbsp;pollTime)&nbsp;-&nbsp;DeviceReadTime(blockSizeLimit)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Using&nbsp;the&nbsp;defaults&nbsp;of&nbsp;.03&nbsp;and&nbsp;65535&nbsp;means&nbsp;you'll&nbsp;read&nbsp;up&nbsp;to&nbsp;2&nbsp;MB&nbsp;per&nbsp;second.&nbsp;Keep&nbsp;in&nbsp;mind&nbsp;that&nbsp;the&nbsp;more&nbsp;time&nbsp;spent&nbsp;in&nbsp;I/O&nbsp;means&nbsp;less&nbsp;time&nbsp;spent&nbsp;doing&nbsp;other&nbsp;tasks.<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@return&nbsp;-&nbsp;The&nbsp;return&nbsp;of&nbsp;this&nbsp;function&nbsp;is&nbsp;a&nbsp;<a href="#BackgroundReadData">BackgroundReadData</a>&nbsp;<a href="builtins.html#object">object</a>.&nbsp;This&nbsp;<a href="builtins.html#object">object</a>&nbsp;contains&nbsp;an&nbsp;attribute&nbsp;"blocks"&nbsp;which&nbsp;is&nbsp;a&nbsp;list&nbsp;of&nbsp;the&nbsp;non-zero-length&nbsp;blocks&nbsp;that&nbsp;were&nbsp;read&nbsp;from&nbsp;the&nbsp;stream.&nbsp;The&nbsp;<a href="builtins.html#object">object</a>&nbsp;also&nbsp;contains&nbsp;a&nbsp;calculated&nbsp;property,&nbsp;"data",&nbsp;which&nbsp;is&nbsp;a&nbsp;string/bytes&nbsp;(depending&nbsp;on&nbsp;stream&nbsp;mode)&nbsp;of&nbsp;all&nbsp;the&nbsp;data&nbsp;currently&nbsp;read.&nbsp;The&nbsp;property&nbsp;"isFinished"&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;True&nbsp;when&nbsp;the&nbsp;stream&nbsp;has&nbsp;been&nbsp;closed.&nbsp;The&nbsp;property&nbsp;"error"&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;any&nbsp;exception&nbsp;that&nbsp;occurs&nbsp;during&nbsp;reading&nbsp;which&nbsp;will&nbsp;terminate&nbsp;the&nbsp;thread.&nbsp;@see&nbsp;<a href="#BackgroundReadData">BackgroundReadData</a>&nbsp;for&nbsp;more&nbsp;info.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__all__</strong> = ('BackgroundReadData', 'bgread')</td></tr></table>
+</body></html>

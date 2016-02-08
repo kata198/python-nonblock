@@ -7,3 +7,4 @@ include setup.py
 include MANIFEST.in
 include LICENSE
 include testWrite.py
+include example/simpleGame.py

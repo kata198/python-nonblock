@@ -27,7 +27,12 @@ When the stream is closed on the other side, and you have already read all the d
 		'''
 
 
-An example usage:
+Keep in mind that you can only read data that has been flushed from the other side, otherwise it does not exist on the buffer.
+
+If you need to do nonblocking reads on sys.stdin coming from a terminal, you will need to use "tty.setraw(sys.stdin)" to put it in raw mode. See examples/simpleGame.py for an example.
+
+
+Example usage:
 
 
 	from nonblock import nonblock_read
@@ -52,6 +57,55 @@ An example usage:
 
 	# All data has been processed, focus on the idle task
 	idleTask()
+
+
+**Background Reading - bgread**
+
+Sometimes you may want to collect data from one or more streams in the background, and check/process the data later.
+
+python-nonblock provides this functionality through a method, "bgread". You provide a stream object and options, and it outputs an object which will automatically be populated in the background by a thread, as data becomes available on the stream.
+
+
+    '''
+        bgread - Start a thread which will read from the given stream in a non-blocking fashion, and automatically populate data in the returned object.
+
+            @param stream <object> - A stream on which to read. Socket, file, etc.
+
+            @param blockSizeLimit <None/int> - Number of bytes. Default 65535.
+
+                If None, the stream will be read from until there is no more available data (not closed, but you've read all that's been flushed to straem). This is okay for smaller datasets, but this number effectively controls the amount of CPU time spent in I/O on this stream VS everything else in your application. The default of 65535 bytes is a fair amount of data.
+
+            @param pollTime <float> - Default .03 (30ms) After all available data has been read from the stream, wait this many seconds before checking again for more data.
+                
+                A low number here means a high priority, i.e. more cycles will be devoted to checking and collecting the background data. Since this is a non-blocking read, this value is the "block", which will return execution context to the remainder of the application. The default of 100ms should be fine in most cases. If it's really idle data collection, you may want to try a value of 1 second.
+
+            @param closeStream <bool> - Default True. If True, the "close" method on the stream object will be called when the other side has closed and all data has been read.
+
+
+
+        NOTES --
+
+                blockSizeLimit / pollTime is your effective max-throughput. Real throughput will be lower than this number, as the actual throughput is be defined by:
+
+                T = (blockSizeLimit / pollTime) - DeviceReadTime(blockSizeLimit)
+
+            Using the defaults of .03 and 65535 means you'll read up to 2 MB per second. Keep in mind that the more time spent in I/O means less time spent doing other tasks.
+
+
+            @return - The return of this function is a BackgroundReadData object. This object contains an attribute "blocks" which is a list of the non-zero-length blocks that were read from the stream. The object also contains a calculated property, "data", which is a string/bytes (depending on stream mode) of all the data currently read. The property "isFinished" will be set to True when the stream has been closed. The property "error" will be set to any exception that occurs during reading which will terminate the thread. @see BackgroundReadData for more info.
+
+
+    '''
+
+
+So for example:
+
+	inputData = bgread(sys.stdin)
+
+	processThings()  # Do some stuff that takes some time
+
+	typedData = inputData.data # Get all the input that occured during 'processThings'.
+
 
 
 **Background Writing - bgwrite**

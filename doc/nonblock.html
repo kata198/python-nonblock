@@ -6,10 +6,10 @@
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
 <tr bgcolor="#7799ee">
 <td valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>nonblock</strong></big></big> (version 2.0.0)</font></td
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>nonblock</strong></big></big> (version 3.0.0)</font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href="nonblock.html">index</a><br></font></td></tr></table>
-    <p><tt>Copyright&nbsp;(c)&nbsp;2015&nbsp;Timothy&nbsp;Savannah&nbsp;under&nbsp;terms&nbsp;of&nbsp;LGPLv2.&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;this&nbsp;LICENSE&nbsp;with&nbsp;this&nbsp;distribution.<br>
+><font color="#ffffff" face="helvetica, arial"><a href="nonblock.html">index</a></font></td></tr></table>
+    <p><tt>Copyright&nbsp;(c)&nbsp;2015-2016&nbsp;Timothy&nbsp;Savannah&nbsp;under&nbsp;terms&nbsp;of&nbsp;LGPLv2.&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;this&nbsp;LICENSE&nbsp;with&nbsp;this&nbsp;distribution.<br>
 &nbsp;<br>
 Contains&nbsp;pure-python&nbsp;functions&nbsp;for&nbsp;non-blocking&nbsp;IO&nbsp;in&nbsp;python</tt></p>
 <p>
@@ -19,9 +19,11 @@ Contains&nbsp;pure-python&nbsp;functions&nbsp;for&nbsp;non-blocking&nbsp;IO&nbsp
 <font color="#ffffff" face="helvetica, arial"><big><strong>Package Contents</strong></big></font></td></tr>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="nonblock.BackgroundWrite.html">BackgroundWrite</a><br>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="nonblock.BackgroundRead.html">BackgroundRead</a><br>
+</td><td width="25%" valign=top><a href="nonblock.BackgroundWrite.html">BackgroundWrite</a><br>
+</td><td width="25%" valign=top><a href="nonblock.common.html">common</a><br>
 </td><td width="25%" valign=top><a href="nonblock.read.html">read</a><br>
-</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+</td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -104,7 +106,33 @@ Data descriptors defined here:<br>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
     
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><dl><dt><a name="-bgwrite"><strong>bgwrite</strong></a>(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4)</dt><dd><tt>bgwrite&nbsp;-&nbsp;Start&nbsp;a&nbsp;background&nbsp;writing&nbsp;process<br>
+<td width="100%"><dl><dt><a name="-bgread"><strong>bgread</strong></a>(stream, blockSizeLimit=65535, pollTime=0.03, closeStream=True)</dt><dd><tt>bgread&nbsp;-&nbsp;Start&nbsp;a&nbsp;thread&nbsp;which&nbsp;will&nbsp;read&nbsp;from&nbsp;the&nbsp;given&nbsp;stream&nbsp;in&nbsp;a&nbsp;non-blocking&nbsp;fashion,&nbsp;and&nbsp;automatically&nbsp;populate&nbsp;data&nbsp;in&nbsp;the&nbsp;returned&nbsp;<a href="builtins.html#object">object</a>.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;stream&nbsp;&lt;<a href="builtins.html#object">object</a>&gt;&nbsp;-&nbsp;A&nbsp;stream&nbsp;on&nbsp;which&nbsp;to&nbsp;read.&nbsp;Socket,&nbsp;file,&nbsp;etc.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;blockSizeLimit&nbsp;&lt;None/int&gt;&nbsp;-&nbsp;Number&nbsp;of&nbsp;bytes.&nbsp;Default&nbsp;65535.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;None,&nbsp;the&nbsp;stream&nbsp;will&nbsp;be&nbsp;read&nbsp;from&nbsp;until&nbsp;there&nbsp;is&nbsp;no&nbsp;more&nbsp;available&nbsp;data&nbsp;(not&nbsp;closed,&nbsp;but&nbsp;you've&nbsp;read&nbsp;all&nbsp;that's&nbsp;been&nbsp;flushed&nbsp;to&nbsp;straem).&nbsp;This&nbsp;is&nbsp;okay&nbsp;for&nbsp;smaller&nbsp;datasets,&nbsp;but&nbsp;this&nbsp;number&nbsp;effectively&nbsp;controls&nbsp;the&nbsp;amount&nbsp;of&nbsp;CPU&nbsp;time&nbsp;spent&nbsp;in&nbsp;I/O&nbsp;on&nbsp;this&nbsp;stream&nbsp;VS&nbsp;everything&nbsp;else&nbsp;in&nbsp;your&nbsp;application.&nbsp;The&nbsp;default&nbsp;of&nbsp;65535&nbsp;bytes&nbsp;is&nbsp;a&nbsp;fair&nbsp;amount&nbsp;of&nbsp;data.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;pollTime&nbsp;&lt;float&gt;&nbsp;-&nbsp;Default&nbsp;.03&nbsp;(30ms)&nbsp;After&nbsp;all&nbsp;available&nbsp;data&nbsp;has&nbsp;been&nbsp;read&nbsp;from&nbsp;the&nbsp;stream,&nbsp;wait&nbsp;this&nbsp;many&nbsp;seconds&nbsp;before&nbsp;checking&nbsp;again&nbsp;for&nbsp;more&nbsp;data.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;low&nbsp;number&nbsp;here&nbsp;means&nbsp;a&nbsp;high&nbsp;priority,&nbsp;i.e.&nbsp;more&nbsp;cycles&nbsp;will&nbsp;be&nbsp;devoted&nbsp;to&nbsp;checking&nbsp;and&nbsp;collecting&nbsp;the&nbsp;background&nbsp;data.&nbsp;Since&nbsp;this&nbsp;is&nbsp;a&nbsp;non-blocking&nbsp;read,&nbsp;this&nbsp;value&nbsp;is&nbsp;the&nbsp;"block",&nbsp;which&nbsp;will&nbsp;return&nbsp;execution&nbsp;context&nbsp;to&nbsp;the&nbsp;remainder&nbsp;of&nbsp;the&nbsp;application.&nbsp;The&nbsp;default&nbsp;of&nbsp;100ms&nbsp;should&nbsp;be&nbsp;fine&nbsp;in&nbsp;most&nbsp;cases.&nbsp;If&nbsp;it's&nbsp;really&nbsp;idle&nbsp;data&nbsp;collection,&nbsp;you&nbsp;may&nbsp;want&nbsp;to&nbsp;try&nbsp;a&nbsp;value&nbsp;of&nbsp;1&nbsp;second.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;closeStream&nbsp;&lt;bool&gt;&nbsp;-&nbsp;Default&nbsp;True.&nbsp;If&nbsp;True,&nbsp;the&nbsp;"close"&nbsp;method&nbsp;on&nbsp;the&nbsp;stream&nbsp;<a href="builtins.html#object">object</a>&nbsp;will&nbsp;be&nbsp;called&nbsp;when&nbsp;the&nbsp;other&nbsp;side&nbsp;has&nbsp;closed&nbsp;and&nbsp;all&nbsp;data&nbsp;has&nbsp;been&nbsp;read.<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+NOTES&nbsp;--<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blockSizeLimit&nbsp;/&nbsp;pollTime&nbsp;is&nbsp;your&nbsp;effective&nbsp;max-throughput.&nbsp;Real&nbsp;throughput&nbsp;will&nbsp;be&nbsp;lower&nbsp;than&nbsp;this&nbsp;number,&nbsp;as&nbsp;the&nbsp;actual&nbsp;throughput&nbsp;is&nbsp;be&nbsp;defined&nbsp;by:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T&nbsp;=&nbsp;(blockSizeLimit&nbsp;/&nbsp;pollTime)&nbsp;-&nbsp;DeviceReadTime(blockSizeLimit)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Using&nbsp;the&nbsp;defaults&nbsp;of&nbsp;.03&nbsp;and&nbsp;65535&nbsp;means&nbsp;you'll&nbsp;read&nbsp;up&nbsp;to&nbsp;2&nbsp;MB&nbsp;per&nbsp;second.&nbsp;Keep&nbsp;in&nbsp;mind&nbsp;that&nbsp;the&nbsp;more&nbsp;time&nbsp;spent&nbsp;in&nbsp;I/O&nbsp;means&nbsp;less&nbsp;time&nbsp;spent&nbsp;doing&nbsp;other&nbsp;tasks.<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@return&nbsp;-&nbsp;The&nbsp;return&nbsp;of&nbsp;this&nbsp;function&nbsp;is&nbsp;a&nbsp;BackgroundReadData&nbsp;<a href="builtins.html#object">object</a>.&nbsp;This&nbsp;<a href="builtins.html#object">object</a>&nbsp;contains&nbsp;an&nbsp;attribute&nbsp;"blocks"&nbsp;which&nbsp;is&nbsp;a&nbsp;list&nbsp;of&nbsp;the&nbsp;non-zero-length&nbsp;blocks&nbsp;that&nbsp;were&nbsp;read&nbsp;from&nbsp;the&nbsp;stream.&nbsp;The&nbsp;<a href="builtins.html#object">object</a>&nbsp;also&nbsp;contains&nbsp;a&nbsp;calculated&nbsp;property,&nbsp;"data",&nbsp;which&nbsp;is&nbsp;a&nbsp;string/bytes&nbsp;(depending&nbsp;on&nbsp;stream&nbsp;mode)&nbsp;of&nbsp;all&nbsp;the&nbsp;data&nbsp;currently&nbsp;read.&nbsp;The&nbsp;property&nbsp;"isFinished"&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;True&nbsp;when&nbsp;the&nbsp;stream&nbsp;has&nbsp;been&nbsp;closed.&nbsp;The&nbsp;property&nbsp;"error"&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;any&nbsp;exception&nbsp;that&nbsp;occurs&nbsp;during&nbsp;reading&nbsp;which&nbsp;will&nbsp;terminate&nbsp;the&nbsp;thread.&nbsp;@see&nbsp;BackgroundReadData&nbsp;for&nbsp;more&nbsp;info.</tt></dd></dl>
+ <dl><dt><a name="-bgwrite"><strong>bgwrite</strong></a>(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4)</dt><dd><tt>bgwrite&nbsp;-&nbsp;Start&nbsp;a&nbsp;background&nbsp;writing&nbsp;process<br>
 &nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;fileObj&nbsp;&lt;stream&gt;&nbsp;-&nbsp;A&nbsp;stream&nbsp;backed&nbsp;by&nbsp;an&nbsp;fd<br>
 &nbsp;<br>
@@ -130,14 +158,13 @@ Data descriptors defined here:<br>
 @param&nbsp;data&nbsp;&lt;string/bytes&gt;&nbsp;-&nbsp;The&nbsp;data&nbsp;to&nbsp;chunk&nbsp;up<br>
 &nbsp;<br>
 @param&nbsp;chunkSize&nbsp;&lt;integer&gt;&nbsp;-&nbsp;The&nbsp;max&nbsp;siZe&nbsp;of&nbsp;each&nbsp;chunk.</tt></dd></dl>
- <dl><dt><a name="-nonblock_read"><strong>nonblock_read</strong></a>(stream, limit=None, forceMode=None)</dt><dd><tt>nonblock_read&nbsp;-&nbsp;Read&nbsp;any&nbsp;data&nbsp;available&nbsp;on&nbsp;the&nbsp;given&nbsp;stream&nbsp;without&nbsp;blocking&nbsp;and&nbsp;regardless&nbsp;of&nbsp;newlines.<br>
+ <dl><dt><a name="-nonblock_read"><strong>nonblock_read</strong></a>(stream, limit=None, forceMode=None)</dt><dd><tt>nonblock_read&nbsp;-&nbsp;Read&nbsp;any&nbsp;data&nbsp;available&nbsp;on&nbsp;the&nbsp;given&nbsp;stream&nbsp;(file,&nbsp;socket,&nbsp;etc)&nbsp;without&nbsp;blocking&nbsp;and&nbsp;regardless&nbsp;of&nbsp;newlines.<br>
 &nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;stream&nbsp;-&nbsp;A&nbsp;stream&nbsp;(like&nbsp;a&nbsp;file&nbsp;<a href="builtins.html#object">object</a>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;stream&nbsp;&lt;<a href="builtins.html#object">object</a>&gt;&nbsp;-&nbsp;A&nbsp;stream&nbsp;(like&nbsp;a&nbsp;file&nbsp;<a href="builtins.html#object">object</a>&nbsp;or&nbsp;a&nbsp;socket)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;limit&nbsp;&lt;None/int&gt;&nbsp;-&nbsp;Max&nbsp;number&nbsp;of&nbsp;bytes&nbsp;to&nbsp;read.&nbsp;If&nbsp;None&nbsp;or&nbsp;0,&nbsp;will&nbsp;read&nbsp;as&nbsp;much&nbsp;data&nbsp;is&nbsp;available.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;forceMode&nbsp;&lt;None/mode&nbsp;string&gt;&nbsp;-&nbsp;If&nbsp;the&nbsp;stream&nbsp;<a href="builtins.html#object">object</a>&nbsp;doesn't&nbsp;specify&nbsp;a&nbsp;"mode"&nbsp;param&nbsp;(like&nbsp;a&nbsp;socket),&nbsp;this&nbsp;function&nbsp;will&nbsp;assume&nbsp;the&nbsp;encoding&nbsp;as&nbsp;"bytes".<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;you&nbsp;want&nbsp;to&nbsp;force&nbsp;a&nbsp;stream&nbsp;mode,&nbsp;use&nbsp;"t"&nbsp;for&nbsp;text&nbsp;(str),&nbsp;or&nbsp;"b"&nbsp;for&nbsp;binary&nbsp;(bytes).&nbsp;Usually&nbsp;not&nbsp;required.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;@param&nbsp;forceMode&nbsp;&lt;None/mode&nbsp;string&gt;&nbsp;-&nbsp;Default&nbsp;None.&nbsp;Will&nbsp;be&nbsp;autodetected&nbsp;if&nbsp;None.&nbsp;If&nbsp;you&nbsp;want&nbsp;to&nbsp;explicitly&nbsp;force&nbsp;a&nbsp;mode,&nbsp;provide&nbsp;'b'&nbsp;for&nbsp;binary&nbsp;(bytes)&nbsp;or&nbsp;'t'&nbsp;for&nbsp;text&nbsp;(Str).&nbsp;This&nbsp;determines&nbsp;the&nbsp;return&nbsp;type.<br>
 &nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;@return&nbsp;-&nbsp;Any&nbsp;data&nbsp;available&nbsp;on&nbsp;the&nbsp;stream,&nbsp;or&nbsp;"None"&nbsp;if&nbsp;the&nbsp;stream&nbsp;was&nbsp;closed&nbsp;on&nbsp;the&nbsp;other&nbsp;side&nbsp;and&nbsp;all&nbsp;data&nbsp;has&nbsp;already&nbsp;been&nbsp;read.</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;@return&nbsp;&lt;str&nbsp;or&nbsp;bytes&nbsp;depending&nbsp;on&nbsp;stream's&nbsp;mode&gt;&nbsp;-&nbsp;Any&nbsp;data&nbsp;available&nbsp;on&nbsp;the&nbsp;stream,&nbsp;or&nbsp;"None"&nbsp;if&nbsp;the&nbsp;stream&nbsp;was&nbsp;closed&nbsp;on&nbsp;the&nbsp;other&nbsp;side&nbsp;and&nbsp;all&nbsp;data&nbsp;has&nbsp;already&nbsp;been&nbsp;read.</tt></dd></dl>
 </td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#55aa55">
@@ -145,5 +172,5 @@ Data descriptors defined here:<br>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
     
 <tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><strong>__all__</strong> = ('nonblock_read', 'bgwrite', 'bgwrite_chunk', 'BackgroundIOPriority')</td></tr></table>
+<td width="100%"><strong>__all__</strong> = ('nonblock_read', 'bgwrite', 'bgwrite_chunk', 'BackgroundIOPriority', 'bgread')</td></tr></table>
 </body></html>
