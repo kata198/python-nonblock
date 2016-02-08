@@ -84,6 +84,8 @@ Example usage:
 	idleTask()
 
 
+An example simple game that uses nonblock_read to drive input whilst always refreshing the map and moving a monster around can be found at: https://github.com/kata198/python-nonblock/blob/master/example/simpleGame.py
+
 
 **Background Reading - bgread**
 
@@ -192,7 +194,6 @@ bgwrite will write data in blocks and perform heuristics in order to provide int
 
 An example of a script using several bgwrites in addition to performing CPU-bound calculations can be found at: https://github.com/kata198/python-nonblock/blob/master/testWrite.py 
 
-An example simple game that uses nonblock_read to drive input whilst always refreshing the map and moving a monster around can be found at: https://github.com/kata198/python-nonblock/blob/master/example/simpleGame.py
 
 
 Full Documentation

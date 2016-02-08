@@ -59,6 +59,8 @@ Example usage:
 	idleTask()
 
 
+An example simple game that uses nonblock\_read to drive input whilst always refreshing the map and moving a monster around can be found at: https://github.com/kata198/python-nonblock/blob/master/example/simpleGame.py
+
 **Background Reading - bgread**
 
 Sometimes you may want to collect data from one or more streams in the background, and check/process the data later.
