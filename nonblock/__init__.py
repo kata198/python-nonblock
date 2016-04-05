@@ -14,6 +14,6 @@ from .BackgroundRead import bgread
 
 __all__ = ('nonblock_read', 'bgwrite', 'bgwrite_chunk', 'BackgroundIOPriority', 'bgread')
 
-__version__ = '3.0.0'
-__version_tuple = (3, 0, 0)
+__version__ = '3.0.1'
+__version_tuple = (3, 0, 1)
 
