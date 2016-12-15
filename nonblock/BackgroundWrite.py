@@ -13,6 +13,14 @@ import time
 
 from collections import deque
 
+# TODO: I'd like to maybe remove defaultChunkSize from BACKGROUND_IO_PRIO and instead keep it strictly priority,
+#  and forcing chunk size to be specified every time (basically, making "bgwrite_chunk" the prototype ).
+#
+#  See "remove_default_chunk_size.patch" in the default directory. The issue I have with this is there
+#    seems to be a noticable drop in performance with this applied, and the priority levels have
+#    much less meaning.
+
+
 __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite_chunk', 'chunk_data')
 
 
