@@ -13,6 +13,7 @@
     performing otherwise blocking I/O operations.
 '''
 import os
+import glob
 import time
 import sys
 from nonblock import bgwrite, bgwrite_chunk
@@ -26,9 +27,10 @@ class dummy(object):
 
 
 # Pick a big file
-BIG_FILE = "/usr/lib/libc-2.22.so"
 
 if __name__ == '__main__':
+
+    BIG_FILE = glob.glob('/usr/lib/libc-2.*.so')[0]
 
     startPrio = 1
     endPrio = 10
