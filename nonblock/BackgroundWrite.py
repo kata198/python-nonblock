@@ -16,7 +16,7 @@ from collections import deque
 __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite_chunk', 'chunk_data')
 
 
-DEBUG = True
+DEBUG = False
 
 
 def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
@@ -69,9 +69,9 @@ class BackgroundIOPriority(object):
             See __init__ for fields
     '''
 
-    __slots__ = ('chainPollTime', 'defaultChunkSize', 'priorityPct', 'charityRate', 'charityTime')
+    __slots__ = ('chainPollTime', 'defaultChunkSize', 'bandwidthPct', 'numChunksRateSmoothing')
 
-    def __init__(self, chainPollTime, defaultChunkSize, priorityPct, charityRate=1.85, charityTime=.0003):
+    def __init__(self, chainPollTime, defaultChunkSize, bandwidthPct, numChunksRateSmoothing=5):
         '''
             __init__ - Create a BackgroundIOPriority. 
 
@@ -85,36 +85,35 @@ class BackgroundIOPriority(object):
                 be used as the max size of each chunk. Each chunk is written and a flush is issued (if the stream supports it).
                 Increasing this increases throughput while decreasing interactivity
 
-            @param priorityPct - integer > 0 and < 100. When this number is high, throughput for the operation will be higher. When it is lower,
-               interactivity is higher, e.x. if you have a calculation going and a write going, the lower this number the longer the write will take, but the more
-               calculations will be performed during that period.
+            @param bandwidthPct - integer > 0 and < 100. This is the percentage of overall bandwidth that this task will attempt to use.
 
-            @param charityRate - float >= 0, Every couple of blocks written, the current throughput is checked and if things have been going swiftly
-               a short sleep will be incurred. Increasing this number causes that check to happen more often.
+              A high number means higher throughput at the cost of lest interactivity for other tasks, a low number means the opposite.
 
-               This number is related to both the number of blocks and the priorityPct. The default, should be fine, but you may find it better
-               as a different value in certain cases. Increasing or decreasing could either increase or decrease interactivity, depending on those other factors.
-               Generally, however, increasing this increases interactivity and ability to write in parallel, at the cost of throughput.
+              So, for example, a bandwidthPct of "50" will attempt to use "50%" of the available bandwidth. Note, this does not represent theroetical
+              max bandwidth, i.e. the max rate of the I/O device, but the amount of available bandwidth available to this application. For example,
+              if this is given "100%", no throttling is performed. If this is given "80%", then it calculates the average time to write a single chunk,
+              ( see #numChunksRateSmoothing for how many chunks are used in evaluating this average ), and sleeps for then 20% of that time at the end
+              of every chunk. 
 
-            @param charityTime - float >= 0 - Used to calculate the time to sleep when the charity period hits. The equation is:
-                sleepTime = charityTime * ((dataWritten / delta) / ( (dataWritten / delta) * priorityPctDec))
-                 Where dataWritten = number of bytes written already, delta = total time spent writing (not including charity time sleeping)
-                 and priorityPctDec = priorityPct / 100.
+            @param numChunksRateSmoothing - integer >= 1 , Default 5. This is the number of chunks which are used in calculating the current throughput rate.
+              See #bandwidthPct for the other half of the story. The higher this number, the more "fair" your application will be against a constant
+              rate of I/O by other applications, but the less able it may be to play fair when the external I/O is spiking.
 
-                 Increasing this can increase interactivity and allow more parallel operations at the cost of throughput.
-                 The default should be fine for the majority of cases, but it is tunable.
-
+              Also, consider that this is related to the #defaultChunkSize, as it is not a constant period of time. The default of "5" should be okay,
+              but you may want to tune it if you use really large or really small chunk sizes.
+            
+            
             An "interactivity score" is defined to be (number of calculations) / (time to write data).
         '''
 
 
         self.chainPollTime = chainPollTime
         self.defaultChunkSize = defaultChunkSize
-        self.priorityPct = float(priorityPct)
-        if priorityPct <= 0 or priorityPct > 100:
-            raise ValueError('Given priorityPct %f must be > 0 and <= 100')
-        self.charityRate = float(charityRate)
-        self.charityTime = float(charityTime)
+        self.bandwidthPct = float(bandwidthPct)
+        if bandwidthPct <= 0 or bandwidthPct > 100:
+            raise ValueError('Given bandwidthPct %f must be > 0 and <= 100')
+
+        self.numChunksRateSmoothing = numChunksRateSmoothing
 
     def __getitem__(self, key):
         if key in BackgroundIOPriority.__slots__:
@@ -218,11 +217,9 @@ class BackgroundWriteProcess(threading.Thread):
 
         # Pull class data into locals
         fileObj = self.fileObj
-        priorityPct = self.backgroundIOPriority.priorityPct
-        priorityPctDec = priorityPct / 100.0
+        bandwidthPct = self.backgroundIOPriority.bandwidthPct
+        bandwidthPctDec = bandwidthPct / 100.0
 
-        charityRate = self.backgroundIOPriority.charityRate
-        charityTime = self.backgroundIOPriority.charityTime
 
         # Number of blocks, total
         numBlocks = len(self.remainingData)
@@ -240,16 +237,27 @@ class BackgroundWriteProcess(threading.Thread):
             doFlush = lambda obj : 1
 
 
-        # charityPeriod - How often we stop for a short bit to be gracious to other running tasks
-        charityPeriod = int(max( (priorityPctDec * numBlocks) / charityRate, 3 ))
+        # numChunksRateSmoothing - How often we stop for a short bit to be gracious to other running tasks.
+        #  float for division below
+        numChunksRateSmoothing = float(self.backgroundIOPriority.numChunksRateSmoothing)
 
-        # i will be the counter from 1 to charityPeriod, and then reset
+        # i will be the counter from 1 to numChunksRateSmoothing, and then reset
         i = 1
+
+        # We start with using max bandwidth until we hit #numChunksRateSmoothing , at which case we recalculate
+        #  sleepTime. We sleep after every block written to maintain a desired average throughput based on
+        #  bandwidthPct
+        sleepTime = 0
 
         # Before represents the "start" time. When we sleep, we will increment this value
         #  such that [ delta = (after - before) ] only accounts for time we've spent writing,
         #  not in charity.
         before = time.time()
+
+        # timeSlept - Amount of time slept, which must be subtracted from total time spend
+        #  to get an accurate picture of throughput.
+        timeSlept = 0
+
         while len(self.remainingData) > 0:
 
             # pop, write, flush
@@ -258,29 +266,35 @@ class BackgroundWriteProcess(threading.Thread):
             doFlush(fileObj)
             
             dataWritten += len(nextData)
+            if sleepTime:
+                sleepBefore = time.time()
+
+                time.sleep(sleepTime)
+
+                sleepAfter = time.time()
+                timeSlept += (sleepAfter - sleepBefore)
  
-            if True:
-#            if i == charityPeriod:
+            if i == numChunksRateSmoothing:
                 # We've completed a full period, time for charity
                 after = time.time()
 
-                delta = after - before
-                # Uncomment the following to see rates
+                delta = after - before - timeSlept
 
                 rate = dataWritten / delta
 
                 if DEBUG is True:
-                    sys.stdout.write('\t  I have written %d bytes in %3.3f seconds (%4.5f M/s)\n' %(dataWritten, delta, (rate) / (1024*1024)  ))
+                    sys.stdout.write('\t  I have written %d bytes in %3.3f seconds and slept %3.3f sec (%4.5f M/s over %3.3fs)\n' %(dataWritten, delta, timeSlept, (rate) / (1024*1024), delta + timeSlept  ))
                     sys.stdout.flush()
 
-                # Calculate how much time we should give up to others
-                sleepTime = delta * (1.00 - priorityPctDec)
-                if DEBUG is True:
-                    sys.stdout.write('DOING sleepTime is: %f\n' %(sleepTime,))
-                time.sleep(sleepTime)
+                # Calculate how much time we should give up on each block to other tasks
+                sleepTime = delta * (1.00 - bandwidthPctDec)
+                sleepTime /= numChunksRateSmoothing
 
-                # Adjust so that [ delta = (after - before) ] only reflects time spent writing, and reset counter
-                before += (time.time() - after)
+                if DEBUG is True:
+                    sys.stdout.write('Calculated new sleepTime to be: %f\n' %(sleepTime,))
+
+                timeSlept = 0
+                before = time.time()
                 i = 0
 
             i += 1
