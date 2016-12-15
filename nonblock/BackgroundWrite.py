@@ -7,13 +7,17 @@
 '''
 # vim: ts=4 sw=4 expandtab
 
-#import sys
+import sys
 import threading
 import time
 
 from collections import deque
 
 __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite_chunk', 'chunk_data')
+
+
+DEBUG = True
+
 
 def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
     '''
@@ -81,7 +85,7 @@ class BackgroundIOPriority(object):
                 be used as the max size of each chunk. Each chunk is written and a flush is issued (if the stream supports it).
                 Increasing this increases throughput while decreasing interactivity
 
-            @param priorityPct - integer > 0, generally 0-100. When this number is high, throughput for the operation will be higher. When it is lower,
+            @param priorityPct - integer > 0 and < 100. When this number is high, throughput for the operation will be higher. When it is lower,
                interactivity is higher, e.x. if you have a calculation going and a write going, the lower this number the longer the write will take, but the more
                calculations will be performed during that period.
 
@@ -107,6 +111,8 @@ class BackgroundIOPriority(object):
         self.chainPollTime = chainPollTime
         self.defaultChunkSize = defaultChunkSize
         self.priorityPct = float(priorityPct)
+        if priorityPct <= 0 or priorityPct > 100:
+            raise ValueError('Given priorityPct %f must be > 0 and <= 100')
         self.charityRate = float(charityRate)
         self.charityTime = float(charityTime)
 
@@ -260,12 +266,16 @@ class BackgroundWriteProcess(threading.Thread):
                 delta = after - before
                 # Uncomment the following to see rates
 
-#                sys.stdout.write('\t  I have written %d bytes in %3.3f seconds (%4.5f M/s)\n' %(dataWritten, delta, (dataWritten / delta) / (1024*1024)  ))
-#                sys.stdout.flush()
+                rate = dataWritten / delta
+
+                if DEBUG is True:
+                    sys.stdout.write('\t  I have written %d bytes in %3.3f seconds (%4.5f M/s)\n' %(dataWritten, delta, (rate) / (1024*1024)  ))
+                    sys.stdout.flush()
 
                 # Calculate how much time we should give up to others
-                sleepTime = charityTime * ((dataWritten / delta) / ( (dataWritten / delta) * priorityPctDec))
-#                sys.stdout.write('DOING sleepTime is: %f\n' %(sleepTime,))
+                sleepTime = delta * (1.00 - priorityPctDec)
+                if DEBUG is True:
+                    sys.stdout.write('DOING sleepTime is: %f\n' %(sleepTime,))
                 time.sleep(sleepTime)
 
                 # Adjust so that [ delta = (after - before) ] only reflects time spent writing, and reset counter
