@@ -54,22 +54,18 @@ def drawMap(x, y, wallNorth, wallSouth, wallEast, wallWest, tries, compassRemain
 
     sys.stdout.write(('=' * (wallEast - wallWest + 2)) + '\n')
     for mapY in range(wallNorth - wallSouth, -1, -1):
-        if False and mapY != y:
-            # Quick path, we are not on this line.
-            sys.stdout.write('|' + (' ' * (wallEast - wallWest)) + '|\n')
-        else:
-            sys.stdout.write('|')
-            for mapX in range(wallEast - wallWest):
-                # Monster on top, then you, then poked spots, then blank spot
-                if [mapX, mapY] == monsterPos:
-                    sys.stdout.write('@')
-                elif mapX == x and mapY == y:
-                    sys.stdout.write('*')
-                elif (mapX, mapY) in pokedSpots:
-                    sys.stdout.write('X')
-                else:
-                    sys.stdout.write(' ')
-            sys.stdout.write('|\n')
+        sys.stdout.write('|')
+        for mapX in range(wallEast - wallWest + 1):
+            # Monster on top, then you, then poked spots, then blank spot
+            if [mapX, mapY] == monsterPos:
+                sys.stdout.write('@')
+            elif mapX == x and mapY == y:
+                sys.stdout.write('*')
+            elif (mapX, mapY) in pokedSpots:
+                sys.stdout.write('X')
+            else:
+                sys.stdout.write(' ')
+        sys.stdout.write('|\n')
     sys.stdout.write(('=' * (wallEast - wallWest + 2)) + '\n')
     sys.stdout.write('Pokes(p): %d\tCompass(c): %d\nPos: (%d, %d)\n%s\n\n' %(tries, compassRemaining, x, y, '-' * 20))
     sys.stdout.write('\n\n%s\n' %(lastMsg,))
@@ -237,11 +233,11 @@ if __name__ == '__main__':
                         hintOutput += 'You feel very close in respect to east-west..\n\n'
                     else:
                         if x > treasureX:
-                            hintOutput += 'You can feel the treasure far to the east..\n\n'
-                        else:
                             hintOutput += 'You can feel the treasure far to the west..\n\n'
+                        else:
+                            hintOutput += 'You can feel the treasure far to the east..\n\n'
 
-                    if abs(x - treasureY) <= VERY_CLOSE:
+                    if abs(y - treasureY) <= VERY_CLOSE:
                         hintOutput += 'You feel very close in respect to north-south..\n\n'
                     else:
                         if y > treasureY:
