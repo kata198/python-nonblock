@@ -258,8 +258,9 @@ class BackgroundWriteProcess(threading.Thread):
             doFlush(fileObj)
             
             dataWritten += len(nextData)
-            
-            if i == charityPeriod:
+ 
+            if True:
+#            if i == charityPeriod:
                 # We've completed a full period, time for charity
                 after = time.time()
 
