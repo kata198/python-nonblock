@@ -130,15 +130,15 @@ _SIZE_MEG = 1024 * 1024
 
 # BG_IO_PRIOS - Predefined I/O priorities, 1-10. The lower the number, the more throughput at the cost of interactivity
 BG_IO_PRIOS = {
-    1  : BackgroundIOPriority(.0009, _SIZE_MEG * 5,    100), # Most throughput, least interactivity, but still very interactive.
+    1  : BackgroundIOPriority(.0009, _SIZE_MEG * 5,    100), # Maximum throughput, no regard for interactivity.
     2  : BackgroundIOPriority(.0009, _SIZE_MEG * 4,     90),
     3  : BackgroundIOPriority(.0015, _SIZE_MEG * 3,     80),
-    4  : BackgroundIOPriority(.0015, _SIZE_MEG * 2,     70),
+    4  : BackgroundIOPriority(.0015, _SIZE_MEG * 2,     75),
     5  : BackgroundIOPriority(.0019, _SIZE_MEG * 1.25,  65),
-    6  : BackgroundIOPriority(.0019, _SIZE_MEG * .6,   50),
-    7  : BackgroundIOPriority(.0024, _SIZE_MEG * .4,    40),
-    8  : BackgroundIOPriority(.0024, _SIZE_MEG * .25,   30),
-    9  : BackgroundIOPriority(.0031, _SIZE_MEG * .175,  30),
+    6  : BackgroundIOPriority(.0019, _SIZE_MEG * .6,   55),
+    7  : BackgroundIOPriority(.0024, _SIZE_MEG * .4,    45),
+    8  : BackgroundIOPriority(.0024, _SIZE_MEG * .25,   35),
+    9  : BackgroundIOPriority(.0031, _SIZE_MEG * .175,  31),
     10 : BackgroundIOPriority(.0100, _SIZE_MEG * .1,    25), # Least throughput, most interactivity, very little throughput
 }
 
