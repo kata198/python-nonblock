@@ -23,8 +23,8 @@ from collections import deque
 
 __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite_chunk', 'chunk_data')
 
-
-DEBUG = False
+# Uncomment the "DEBUG" sections you want to see below. Search for DEBUG.
+#DEBUG = False
 
 
 def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
@@ -140,14 +140,14 @@ _SIZE_MEG = 1024 * 1024
 BG_IO_PRIOS = {
     1  : BackgroundIOPriority(.0009, _SIZE_MEG * 5,    100), # Maximum throughput, no regard for interactivity.
     2  : BackgroundIOPriority(.0009, _SIZE_MEG * 4,     90),
-    3  : BackgroundIOPriority(.0015, _SIZE_MEG * 3,     80),
-    4  : BackgroundIOPriority(.0015, _SIZE_MEG * 2,     75),
-    5  : BackgroundIOPriority(.0019, _SIZE_MEG * 1.25,  65),
-    6  : BackgroundIOPriority(.0019, _SIZE_MEG * .6,   55),
-    7  : BackgroundIOPriority(.0024, _SIZE_MEG * .4,    45),
-    8  : BackgroundIOPriority(.0024, _SIZE_MEG * .25,   35),
-    9  : BackgroundIOPriority(.0031, _SIZE_MEG * .175,  31),
-    10 : BackgroundIOPriority(.0100, _SIZE_MEG * .1,    25), # Least throughput, most interactivity, very little throughput
+    3  : BackgroundIOPriority(.0015, _SIZE_MEG * 3,     78),
+    4  : BackgroundIOPriority(.0015, _SIZE_MEG * 2,     72),
+    5  : BackgroundIOPriority(.0019, _SIZE_MEG * 1.6,   65),
+    6  : BackgroundIOPriority(.0019, _SIZE_MEG * .75,   55),
+    7  : BackgroundIOPriority(.0024, _SIZE_MEG * .69,   45),
+    8  : BackgroundIOPriority(.0024, _SIZE_MEG * .5,    35),
+    9  : BackgroundIOPriority(.0031, _SIZE_MEG * .3,    30),
+    10 : BackgroundIOPriority(.0100, _SIZE_MEG * .25,   20), # Least throughput, most interactivity, very little throughput
 }
 
 
@@ -266,6 +266,16 @@ class BackgroundWriteProcess(threading.Thread):
         #  to get an accurate picture of throughput.
         timeSlept = 0
 
+        # firstPass - Mark the first pass through, so we can get a rough calculation
+        #  of speed from the first write, and recalculate after #numChunksRateSmoothing
+        firstPass = True
+
+        if bandwidthPct == 100:
+            shouldRecalculate = lambda i, numChunksRateSmoothing, firstPass : False
+        else:
+            shouldRecalculate = lambda i, numChunksRateSmoothing, firstPass : firstPass or i == numChunksRateSmoothing
+            
+
         while len(self.remainingData) > 0:
 
             # pop, write, flush
@@ -282,7 +292,8 @@ class BackgroundWriteProcess(threading.Thread):
                 sleepAfter = time.time()
                 timeSlept += (sleepAfter - sleepBefore)
  
-            if i == numChunksRateSmoothing:
+            if shouldRecalculate(i, numChunksRateSmoothing, firstPass) is True:
+                # if not sleeptime, we are on first 
                 # We've completed a full period, time for charity
                 after = time.time()
 
@@ -290,20 +301,36 @@ class BackgroundWriteProcess(threading.Thread):
 
                 rate = dataWritten / delta
 
-                if DEBUG is True:
-                    sys.stdout.write('\t  I have written %d bytes in %3.3f seconds and slept %3.3f sec (%4.5f M/s over %3.3fs)\n' %(dataWritten, delta, timeSlept, (rate) / (1024*1024), delta + timeSlept  ))
-                    sys.stdout.flush()
+#                if DEBUG is True:
+#                    sys.stdout.write('\t  I have written %d bytes in %3.3f seconds and slept %3.3f sec (%4.5f M/s over %3.3fs)\n' %(dataWritten, delta, timeSlept, (rate) / (1024*1024), delta + timeSlept  ))
+#                    sys.stdout.flush()
 
                 # Calculate how much time we should give up on each block to other tasks
                 sleepTime = delta * (1.00 - bandwidthPctDec)
                 sleepTime /= numChunksRateSmoothing
 
-                if DEBUG is True:
-                    sys.stdout.write('Calculated new sleepTime to be: %f\n' %(sleepTime,))
+#                if DEBUG is True:
+#                    sys.stdout.write('Calculated new sleepTime to be: %f\n' %(sleepTime,))
 
                 timeSlept = 0
                 before = time.time()
                 i = 0
+#            elif DEBUG is True and i == numChunksRateSmoothing:
+#                # When bandwidth pct is 100 (prio=1), the above DEBUG will never be hit.
+#                after = time.time()
+#
+#                delta = after - before - timeSlept
+#
+#                rate = dataWritten / delta
+#
+#                sys.stdout.write('\t  I have written %d bytes in %3.3f seconds and slept %3.3f sec (%4.5f M/s over %3.3fs)\n' %(dataWritten, delta, timeSlept, (rate) / (1024*1024), delta + timeSlept  ))
+#                sys.stdout.flush()
+#
+#                timeSlept = 0
+#                before = time.time()
+#                i = 0
+
+            firstPass = False
 
             i += 1
 
