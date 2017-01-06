@@ -12,7 +12,7 @@ if __name__ == '__main__':
         long_description = summary
 
     setup(name='python-nonblock',
-            version='3.0.1',
+            version='4.0.0',
             packages=['nonblock'],
             author='Tim Savannah',
             author_email='kata198@gmail.com',
@@ -30,6 +30,7 @@ if __name__ == '__main__':
                           'Programming Language :: Python :: 2.7',
                           'Programming Language :: Python :: 3',
                           'Programming Language :: Python :: 3.4',
+                          'Programming Language :: Python :: 3.5',
                           'Operating System :: POSIX',
                           'Operating System :: POSIX :: Linux',
                           'Operating System :: Unix',
