@@ -8,8 +8,8 @@
 <td valign=bottom>&nbsp;<br>
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="nonblock.html"><font color="#ffffff">nonblock</font></a>.BackgroundWrite</strong></big></big></font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href="nonblock.html">index</a></font></td></tr></table>
-    <p><tt>Copyright&nbsp;(c)&nbsp;2015&nbsp;Timothy&nbsp;Savannah&nbsp;under&nbsp;terms&nbsp;of&nbsp;LGPLv2.&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;this&nbsp;LICENSE&nbsp;with&nbsp;this&nbsp;distribution.<br>
+><font color="#ffffff" face="helvetica, arial"><a href="nonblock.html">index</a><br></font></td></tr></table>
+    <p><tt>Copyright&nbsp;(c)&nbsp;2015,&nbsp;2016,&nbsp;2017&nbsp;Timothy&nbsp;Savannah&nbsp;under&nbsp;terms&nbsp;of&nbsp;LGPLv2.&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;this&nbsp;LICENSE&nbsp;with&nbsp;this&nbsp;distribution.<br>
 &nbsp;<br>
 BackgroundWrite.py&nbsp;Contains&nbsp;pure-python&nbsp;functions&nbsp;for&nbsp;non-blocking&nbsp;background&nbsp;writing&nbsp;(writing&nbsp;multiple&nbsp;streams&nbsp;at&nbsp;once;&nbsp;interactive&nbsp;writing&nbsp;allowing&nbsp;a&nbsp;high&nbsp;amount&nbsp;of&nbsp;CPU&nbsp;time&nbsp;for&nbsp;calculations/other&nbsp;tasks</tt></p>
 <p>
@@ -19,9 +19,10 @@ BackgroundWrite.py&nbsp;Contains&nbsp;pure-python&nbsp;functions&nbsp;for&nbsp;n
 <font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="threading.html">threading</a><br>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top><a href="threading.html">threading</a><br>
 </td><td width="25%" valign=top><a href="time.html">time</a><br>
-</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -56,7 +57,7 @@ BackgroundWrite.py&nbsp;Contains&nbsp;pure-python&nbsp;functions&nbsp;for&nbsp;n
 <td width="100%">Methods defined here:<br>
 <dl><dt><a name="BackgroundIOPriority-__getitem__"><strong>__getitem__</strong></a>(self, key)</dt></dl>
 
-<dl><dt><a name="BackgroundIOPriority-__init__"><strong>__init__</strong></a>(self, chainPollTime, defaultChunkSize, priorityPct, charityRate=1.85, charityTime=0.0003)</dt><dd><tt>__init__&nbsp;-&nbsp;Create&nbsp;a&nbsp;<a href="#BackgroundIOPriority">BackgroundIOPriority</a>.&nbsp;<br>
+<dl><dt><a name="BackgroundIOPriority-__init__"><strong>__init__</strong></a>(self, chainPollTime, defaultChunkSize, bandwidthPct, numChunksRateSmoothing=5)</dt><dd><tt>__init__&nbsp;-&nbsp;Create&nbsp;a&nbsp;<a href="#BackgroundIOPriority">BackgroundIOPriority</a>.&nbsp;<br>
 &nbsp;<br>
 Some&nbsp;terms:&nbsp;throughput&nbsp;-&nbsp;Bandwidth&nbsp;out&nbsp;(Megs&nbsp;per&nbsp;second)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interactivity&nbsp;-&nbsp;CPU&nbsp;time&nbsp;available&nbsp;for&nbsp;other&nbsp;tasks&nbsp;(calculations,&nbsp;other&nbsp;I/O,&nbsp;etc)<br>
@@ -68,24 +69,23 @@ Some&nbsp;terms:&nbsp;throughput&nbsp;-&nbsp;Bandwidth&nbsp;out&nbsp;(Megs&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;be&nbsp;used&nbsp;as&nbsp;the&nbsp;max&nbsp;size&nbsp;of&nbsp;each&nbsp;chunk.&nbsp;Each&nbsp;chunk&nbsp;is&nbsp;written&nbsp;and&nbsp;a&nbsp;flush&nbsp;is&nbsp;issued&nbsp;(if&nbsp;the&nbsp;stream&nbsp;supports&nbsp;it).<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Increasing&nbsp;this&nbsp;increases&nbsp;throughput&nbsp;while&nbsp;decreasing&nbsp;interactivity<br>
 &nbsp;<br>
-@param&nbsp;priorityPct&nbsp;-&nbsp;integer&nbsp;&gt;&nbsp;0,&nbsp;generally&nbsp;0-100.&nbsp;When&nbsp;this&nbsp;number&nbsp;is&nbsp;high,&nbsp;throughput&nbsp;for&nbsp;the&nbsp;operation&nbsp;will&nbsp;be&nbsp;higher.&nbsp;When&nbsp;it&nbsp;is&nbsp;lower,<br>
-&nbsp;&nbsp;&nbsp;interactivity&nbsp;is&nbsp;higher,&nbsp;e.x.&nbsp;if&nbsp;you&nbsp;have&nbsp;a&nbsp;calculation&nbsp;going&nbsp;and&nbsp;a&nbsp;write&nbsp;going,&nbsp;the&nbsp;lower&nbsp;this&nbsp;number&nbsp;the&nbsp;longer&nbsp;the&nbsp;write&nbsp;will&nbsp;take,&nbsp;but&nbsp;the&nbsp;more<br>
-&nbsp;&nbsp;&nbsp;calculations&nbsp;will&nbsp;be&nbsp;performed&nbsp;during&nbsp;that&nbsp;period.<br>
+@param&nbsp;bandwidthPct&nbsp;-&nbsp;integer&nbsp;&gt;&nbsp;0&nbsp;and&nbsp;&lt;&nbsp;100.&nbsp;This&nbsp;is&nbsp;the&nbsp;percentage&nbsp;of&nbsp;overall&nbsp;bandwidth&nbsp;that&nbsp;this&nbsp;task&nbsp;will&nbsp;attempt&nbsp;to&nbsp;use.<br>
 &nbsp;<br>
-@param&nbsp;charityRate&nbsp;-&nbsp;float&nbsp;&gt;=&nbsp;0,&nbsp;Every&nbsp;couple&nbsp;of&nbsp;blocks&nbsp;written,&nbsp;the&nbsp;current&nbsp;throughput&nbsp;is&nbsp;checked&nbsp;and&nbsp;if&nbsp;things&nbsp;have&nbsp;been&nbsp;going&nbsp;swiftly<br>
-&nbsp;&nbsp;&nbsp;a&nbsp;short&nbsp;sleep&nbsp;will&nbsp;be&nbsp;incurred.&nbsp;Increasing&nbsp;this&nbsp;number&nbsp;causes&nbsp;that&nbsp;check&nbsp;to&nbsp;happen&nbsp;more&nbsp;often.<br>
+&nbsp;&nbsp;A&nbsp;high&nbsp;number&nbsp;means&nbsp;higher&nbsp;throughput&nbsp;at&nbsp;the&nbsp;cost&nbsp;of&nbsp;lest&nbsp;interactivity&nbsp;for&nbsp;other&nbsp;tasks,&nbsp;a&nbsp;low&nbsp;number&nbsp;means&nbsp;the&nbsp;opposite.<br>
 &nbsp;<br>
-&nbsp;&nbsp;&nbsp;This&nbsp;number&nbsp;is&nbsp;related&nbsp;to&nbsp;both&nbsp;the&nbsp;number&nbsp;of&nbsp;blocks&nbsp;and&nbsp;the&nbsp;priorityPct.&nbsp;The&nbsp;default,&nbsp;should&nbsp;be&nbsp;fine,&nbsp;but&nbsp;you&nbsp;may&nbsp;find&nbsp;it&nbsp;better<br>
-&nbsp;&nbsp;&nbsp;as&nbsp;a&nbsp;different&nbsp;value&nbsp;in&nbsp;certain&nbsp;cases.&nbsp;Increasing&nbsp;or&nbsp;decreasing&nbsp;could&nbsp;either&nbsp;increase&nbsp;or&nbsp;decrease&nbsp;interactivity,&nbsp;depending&nbsp;on&nbsp;those&nbsp;other&nbsp;factors.<br>
-&nbsp;&nbsp;&nbsp;Generally,&nbsp;however,&nbsp;increasing&nbsp;this&nbsp;increases&nbsp;interactivity&nbsp;and&nbsp;ability&nbsp;to&nbsp;write&nbsp;in&nbsp;parallel,&nbsp;at&nbsp;the&nbsp;cost&nbsp;of&nbsp;throughput.<br>
+&nbsp;&nbsp;So,&nbsp;for&nbsp;example,&nbsp;a&nbsp;bandwidthPct&nbsp;of&nbsp;"50"&nbsp;will&nbsp;attempt&nbsp;to&nbsp;use&nbsp;"50%"&nbsp;of&nbsp;the&nbsp;available&nbsp;bandwidth.&nbsp;Note,&nbsp;this&nbsp;does&nbsp;not&nbsp;represent&nbsp;theroetical<br>
+&nbsp;&nbsp;max&nbsp;bandwidth,&nbsp;i.e.&nbsp;the&nbsp;max&nbsp;rate&nbsp;of&nbsp;the&nbsp;I/O&nbsp;device,&nbsp;but&nbsp;the&nbsp;amount&nbsp;of&nbsp;available&nbsp;bandwidth&nbsp;available&nbsp;to&nbsp;this&nbsp;application.&nbsp;For&nbsp;example,<br>
+&nbsp;&nbsp;if&nbsp;this&nbsp;is&nbsp;given&nbsp;"100%",&nbsp;no&nbsp;throttling&nbsp;is&nbsp;performed.&nbsp;If&nbsp;this&nbsp;is&nbsp;given&nbsp;"80%",&nbsp;then&nbsp;it&nbsp;calculates&nbsp;the&nbsp;average&nbsp;time&nbsp;to&nbsp;write&nbsp;a&nbsp;single&nbsp;chunk,<br>
+&nbsp;&nbsp;(&nbsp;see&nbsp;#numChunksRateSmoothing&nbsp;for&nbsp;how&nbsp;many&nbsp;chunks&nbsp;are&nbsp;used&nbsp;in&nbsp;evaluating&nbsp;this&nbsp;average&nbsp;),&nbsp;and&nbsp;sleeps&nbsp;for&nbsp;then&nbsp;20%&nbsp;of&nbsp;that&nbsp;time&nbsp;at&nbsp;the&nbsp;end<br>
+&nbsp;&nbsp;of&nbsp;every&nbsp;chunk.&nbsp;<br>
 &nbsp;<br>
-@param&nbsp;charityTime&nbsp;-&nbsp;float&nbsp;&gt;=&nbsp;0&nbsp;-&nbsp;Used&nbsp;to&nbsp;calculate&nbsp;the&nbsp;time&nbsp;to&nbsp;sleep&nbsp;when&nbsp;the&nbsp;charity&nbsp;period&nbsp;hits.&nbsp;The&nbsp;equation&nbsp;is:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;sleepTime&nbsp;=&nbsp;charityTime&nbsp;*&nbsp;((dataWritten&nbsp;/&nbsp;delta)&nbsp;/&nbsp;(&nbsp;(dataWritten&nbsp;/&nbsp;delta)&nbsp;*&nbsp;priorityPctDec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Where&nbsp;dataWritten&nbsp;=&nbsp;number&nbsp;of&nbsp;bytes&nbsp;written&nbsp;already,&nbsp;delta&nbsp;=&nbsp;total&nbsp;time&nbsp;spent&nbsp;writing&nbsp;(not&nbsp;including&nbsp;charity&nbsp;time&nbsp;sleeping)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;priorityPctDec&nbsp;=&nbsp;priorityPct&nbsp;/&nbsp;100.<br>
+@param&nbsp;numChunksRateSmoothing&nbsp;-&nbsp;integer&nbsp;&gt;=&nbsp;1&nbsp;,&nbsp;Default&nbsp;5.&nbsp;This&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;chunks&nbsp;which&nbsp;are&nbsp;used&nbsp;in&nbsp;calculating&nbsp;the&nbsp;current&nbsp;throughput&nbsp;rate.<br>
+&nbsp;&nbsp;See&nbsp;#bandwidthPct&nbsp;for&nbsp;the&nbsp;other&nbsp;half&nbsp;of&nbsp;the&nbsp;story.&nbsp;The&nbsp;higher&nbsp;this&nbsp;number,&nbsp;the&nbsp;more&nbsp;"fair"&nbsp;your&nbsp;application&nbsp;will&nbsp;be&nbsp;against&nbsp;a&nbsp;constant<br>
+&nbsp;&nbsp;rate&nbsp;of&nbsp;I/O&nbsp;by&nbsp;other&nbsp;applications,&nbsp;but&nbsp;the&nbsp;less&nbsp;able&nbsp;it&nbsp;may&nbsp;be&nbsp;to&nbsp;play&nbsp;fair&nbsp;when&nbsp;the&nbsp;external&nbsp;I/O&nbsp;is&nbsp;spiking.<br>
 &nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Increasing&nbsp;this&nbsp;can&nbsp;increase&nbsp;interactivity&nbsp;and&nbsp;allow&nbsp;more&nbsp;parallel&nbsp;operations&nbsp;at&nbsp;the&nbsp;cost&nbsp;of&nbsp;throughput.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;default&nbsp;should&nbsp;be&nbsp;fine&nbsp;for&nbsp;the&nbsp;majority&nbsp;of&nbsp;cases,&nbsp;but&nbsp;it&nbsp;is&nbsp;tunable.<br>
+&nbsp;&nbsp;Also,&nbsp;consider&nbsp;that&nbsp;this&nbsp;is&nbsp;related&nbsp;to&nbsp;the&nbsp;#defaultChunkSize,&nbsp;as&nbsp;it&nbsp;is&nbsp;not&nbsp;a&nbsp;constant&nbsp;period&nbsp;of&nbsp;time.&nbsp;The&nbsp;default&nbsp;of&nbsp;"5"&nbsp;should&nbsp;be&nbsp;okay,<br>
+&nbsp;&nbsp;but&nbsp;you&nbsp;may&nbsp;want&nbsp;to&nbsp;tune&nbsp;it&nbsp;if&nbsp;you&nbsp;use&nbsp;really&nbsp;large&nbsp;or&nbsp;really&nbsp;small&nbsp;chunk&nbsp;sizes.<br>
+&nbsp;<br>
 &nbsp;<br>
 An&nbsp;"interactivity&nbsp;score"&nbsp;is&nbsp;defined&nbsp;to&nbsp;be&nbsp;(number&nbsp;of&nbsp;calculations)&nbsp;/&nbsp;(time&nbsp;to&nbsp;write&nbsp;data).</tt></dd></dl>
 
@@ -93,15 +93,13 @@ An&nbsp;"interactivity&nbsp;score"&nbsp;is&nbsp;defined&nbsp;to&nbsp;be&nbsp;(nu
 
 <hr>
 Data descriptors defined here:<br>
+<dl><dt><strong>bandwidthPct</strong></dt>
+</dl>
 <dl><dt><strong>chainPollTime</strong></dt>
-</dl>
-<dl><dt><strong>charityRate</strong></dt>
-</dl>
-<dl><dt><strong>charityTime</strong></dt>
 </dl>
 <dl><dt><strong>defaultChunkSize</strong></dt>
 </dl>
-<dl><dt><strong>priorityPct</strong></dt>
+<dl><dt><strong>numChunksRateSmoothing</strong></dt>
 </dl>
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -145,6 +143,92 @@ Methods defined here:<br>
 
 <dl><dt><a name="BackgroundWriteProcess-run"><strong>run</strong></a>(self)</dt><dd><tt>run&nbsp;-&nbsp;Starts&nbsp;the&nbsp;thread.&nbsp;bgwrite&nbsp;and&nbsp;bgwrite_chunk&nbsp;automatically&nbsp;start&nbsp;the&nbsp;thread.</tt></dd></dl>
 
+<hr>
+Methods inherited from <a href="threading.html#Thread">threading.Thread</a>:<br>
+<dl><dt><a name="BackgroundWriteProcess-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Return&nbsp;repr(self).</tt></dd></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-getName"><strong>getName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-isAlive"><strong>isAlive</strong></a> = is_alive(self)</dt><dd><tt>Return&nbsp;whether&nbsp;the&nbsp;thread&nbsp;is&nbsp;alive.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;returns&nbsp;True&nbsp;just&nbsp;before&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;starts&nbsp;until&nbsp;just<br>
+after&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;terminates.&nbsp;The&nbsp;module&nbsp;function&nbsp;enumerate()<br>
+returns&nbsp;a&nbsp;list&nbsp;of&nbsp;all&nbsp;alive&nbsp;threads.</tt></dd></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-isDaemon"><strong>isDaemon</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-is_alive"><strong>is_alive</strong></a>(self)</dt><dd><tt>Return&nbsp;whether&nbsp;the&nbsp;thread&nbsp;is&nbsp;alive.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;returns&nbsp;True&nbsp;just&nbsp;before&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;starts&nbsp;until&nbsp;just<br>
+after&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;terminates.&nbsp;The&nbsp;module&nbsp;function&nbsp;enumerate()<br>
+returns&nbsp;a&nbsp;list&nbsp;of&nbsp;all&nbsp;alive&nbsp;threads.</tt></dd></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-join"><strong>join</strong></a>(self, timeout=None)</dt><dd><tt>Wait&nbsp;until&nbsp;the&nbsp;thread&nbsp;terminates.<br>
+&nbsp;<br>
+This&nbsp;blocks&nbsp;the&nbsp;calling&nbsp;thread&nbsp;until&nbsp;the&nbsp;thread&nbsp;whose&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;method&nbsp;is<br>
+called&nbsp;terminates&nbsp;--&nbsp;either&nbsp;normally&nbsp;or&nbsp;through&nbsp;an&nbsp;unhandled&nbsp;exception<br>
+or&nbsp;until&nbsp;the&nbsp;optional&nbsp;timeout&nbsp;occurs.<br>
+&nbsp;<br>
+When&nbsp;the&nbsp;timeout&nbsp;argument&nbsp;is&nbsp;present&nbsp;and&nbsp;not&nbsp;None,&nbsp;it&nbsp;should&nbsp;be&nbsp;a<br>
+floating&nbsp;point&nbsp;number&nbsp;specifying&nbsp;a&nbsp;timeout&nbsp;for&nbsp;the&nbsp;operation&nbsp;in&nbsp;seconds<br>
+(or&nbsp;fractions&nbsp;thereof).&nbsp;As&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;always&nbsp;returns&nbsp;None,&nbsp;you&nbsp;must&nbsp;call<br>
+<a href="#BackgroundWriteProcess-isAlive">isAlive</a>()&nbsp;after&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;to&nbsp;decide&nbsp;whether&nbsp;a&nbsp;timeout&nbsp;happened&nbsp;--&nbsp;if&nbsp;the<br>
+thread&nbsp;is&nbsp;still&nbsp;alive,&nbsp;the&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;call&nbsp;timed&nbsp;out.<br>
+&nbsp;<br>
+When&nbsp;the&nbsp;timeout&nbsp;argument&nbsp;is&nbsp;not&nbsp;present&nbsp;or&nbsp;None,&nbsp;the&nbsp;operation&nbsp;will<br>
+block&nbsp;until&nbsp;the&nbsp;thread&nbsp;terminates.<br>
+&nbsp;<br>
+A&nbsp;thread&nbsp;can&nbsp;be&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()ed&nbsp;many&nbsp;times.<br>
+&nbsp;<br>
+<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;raises&nbsp;a&nbsp;RuntimeError&nbsp;if&nbsp;an&nbsp;attempt&nbsp;is&nbsp;made&nbsp;to&nbsp;join&nbsp;the&nbsp;current<br>
+thread&nbsp;as&nbsp;that&nbsp;would&nbsp;cause&nbsp;a&nbsp;deadlock.&nbsp;It&nbsp;is&nbsp;also&nbsp;an&nbsp;error&nbsp;to&nbsp;<a href="#BackgroundWriteProcess-join">join</a>()&nbsp;a<br>
+thread&nbsp;before&nbsp;it&nbsp;has&nbsp;been&nbsp;started&nbsp;and&nbsp;attempts&nbsp;to&nbsp;do&nbsp;so&nbsp;raises&nbsp;the&nbsp;same<br>
+exception.</tt></dd></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-setDaemon"><strong>setDaemon</strong></a>(self, daemonic)</dt></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-setName"><strong>setName</strong></a>(self, name)</dt></dl>
+
+<dl><dt><a name="BackgroundWriteProcess-start"><strong>start</strong></a>(self)</dt><dd><tt>Start&nbsp;the&nbsp;thread's&nbsp;activity.<br>
+&nbsp;<br>
+It&nbsp;must&nbsp;be&nbsp;called&nbsp;at&nbsp;most&nbsp;once&nbsp;per&nbsp;thread&nbsp;<a href="builtins.html#object">object</a>.&nbsp;It&nbsp;arranges&nbsp;for&nbsp;the<br>
+<a href="builtins.html#object">object</a>'s&nbsp;<a href="#BackgroundWriteProcess-run">run</a>()&nbsp;method&nbsp;to&nbsp;be&nbsp;invoked&nbsp;in&nbsp;a&nbsp;separate&nbsp;thread&nbsp;of&nbsp;control.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;will&nbsp;raise&nbsp;a&nbsp;RuntimeError&nbsp;if&nbsp;called&nbsp;more&nbsp;than&nbsp;once&nbsp;on&nbsp;the<br>
+same&nbsp;thread&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="threading.html#Thread">threading.Thread</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>daemon</strong></dt>
+<dd><tt>A&nbsp;boolean&nbsp;value&nbsp;indicating&nbsp;whether&nbsp;this&nbsp;thread&nbsp;is&nbsp;a&nbsp;daemon&nbsp;thread.<br>
+&nbsp;<br>
+This&nbsp;must&nbsp;be&nbsp;set&nbsp;before&nbsp;start()&nbsp;is&nbsp;called,&nbsp;otherwise&nbsp;RuntimeError&nbsp;is<br>
+raised.&nbsp;Its&nbsp;initial&nbsp;value&nbsp;is&nbsp;inherited&nbsp;from&nbsp;the&nbsp;creating&nbsp;thread;&nbsp;the<br>
+main&nbsp;thread&nbsp;is&nbsp;not&nbsp;a&nbsp;daemon&nbsp;thread&nbsp;and&nbsp;therefore&nbsp;all&nbsp;threads&nbsp;created&nbsp;in<br>
+the&nbsp;main&nbsp;thread&nbsp;default&nbsp;to&nbsp;daemon&nbsp;=&nbsp;False.<br>
+&nbsp;<br>
+The&nbsp;entire&nbsp;Python&nbsp;program&nbsp;exits&nbsp;when&nbsp;no&nbsp;alive&nbsp;non-daemon&nbsp;threads&nbsp;are<br>
+left.</tt></dd>
+</dl>
+<dl><dt><strong>ident</strong></dt>
+<dd><tt>Thread&nbsp;identifier&nbsp;of&nbsp;this&nbsp;thread&nbsp;or&nbsp;None&nbsp;if&nbsp;it&nbsp;has&nbsp;not&nbsp;been&nbsp;started.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;a&nbsp;nonzero&nbsp;integer.&nbsp;See&nbsp;the&nbsp;thread.get_ident()&nbsp;function.&nbsp;Thread<br>
+identifiers&nbsp;may&nbsp;be&nbsp;recycled&nbsp;when&nbsp;a&nbsp;thread&nbsp;exits&nbsp;and&nbsp;another&nbsp;thread&nbsp;is<br>
+created.&nbsp;The&nbsp;identifier&nbsp;is&nbsp;available&nbsp;even&nbsp;after&nbsp;the&nbsp;thread&nbsp;has&nbsp;exited.</tt></dd>
+</dl>
+<dl><dt><strong>name</strong></dt>
+<dd><tt>A&nbsp;string&nbsp;used&nbsp;for&nbsp;identification&nbsp;purposes&nbsp;only.<br>
+&nbsp;<br>
+It&nbsp;has&nbsp;no&nbsp;semantics.&nbsp;Multiple&nbsp;threads&nbsp;may&nbsp;be&nbsp;given&nbsp;the&nbsp;same&nbsp;name.&nbsp;The<br>
+initial&nbsp;name&nbsp;is&nbsp;set&nbsp;by&nbsp;the&nbsp;constructor.</tt></dd>
+</dl>
 </td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#eeaa77">
