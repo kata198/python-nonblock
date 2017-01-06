@@ -1,5 +1,5 @@
 '''
-    Copyright (c) 2015 Timothy Savannah under terms of LGPLv2. You should have received a copy of this LICENSE with this distribution.
+    Copyright (c) 2015, 2016, 2017 Timothy Savannah under terms of LGPLv2. You should have received a copy of this LICENSE with this distribution.
 
     BackgroundWrite.py Contains pure-python functions for non-blocking background writing (writing multiple streams at once; interactive writing allowing a high amount of CPU time for calculations/other tasks
 

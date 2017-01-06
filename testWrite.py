@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-    This testWrite.py file is a testcase for python-nonblock (c) 2015 Tim Savannah.
+    This testWrite.py file is a testcase for python-nonblock (c) 2015,2016,2017 Tim Savannah.
 
     The testcase itself is hereby granted access as a Public Domain work, or the closest legally in your area.
 
