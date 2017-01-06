@@ -1,3 +1,18 @@
+* 4.0.0 Jan 6 2017
+- Update testWrite.py program for better testing of I/O priority levels in
+BackgroundWrite given your default load
+- Fixup equations in BackgroundWrite to better guarentee a given priority
+(bandwidth percent)
+- Fine-Tune default I/O priority levels in BackgroundWrite to ensure a higher
+overall performance, a more constant difference between other task priorities
+and this task priority, less of a difference in default block size, etc.
+- Minor optimizations in BackgroundWrite
+- BACKWORDS-INCOMPATIBLE: BackgroundIOPriority now has a different constructor, so if you specified
+custom priorities (instead of passing ioprio=1-9) these will need to be
+adjusted.
+- Make ioprio=1 not sleep at all, i.e. maximum available I/O in background
+
+
 * 3.0.0 Feb 5 2016
 - BUGFIX: Fix typo in MANIFEST.in
 - FEATURE: Update nonblock_read so it works with socket-like objects as well as file-like
