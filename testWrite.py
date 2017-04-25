@@ -26,6 +26,7 @@ import os
 import glob
 import time
 import sys
+import subprocess
 from nonblock import bgwrite, bgwrite_chunk
 
 
@@ -88,7 +89,17 @@ if __name__ == '__main__':
 
         if DO_SYNC is True:
             # Ensure pending data is flushed so next run has fair chance
-            os.sync()
+            if sys.version_info.major >= 3:
+                # python3 supports os.sync
+                os.sync()
+            elif sys.platform == 'linux':
+                # python2 has no sync, but if we are on linux we can try
+                #   the sync command
+                try:
+                    pipe = subprocess.Popen('sync', shell=True)
+                    pipe.wait()
+                except:
+                    pass
             time.sleep(3)
 
 
