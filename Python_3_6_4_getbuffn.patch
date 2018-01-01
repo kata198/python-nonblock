@@ -1,0 +1,125 @@
+--- Modules/_io/clinic/bufferedio.c.h.orig	2018-01-01 01:22:36.000000000 -0500
++++ Modules/_io/clinic/bufferedio.c.h	2018-01-01 01:22:46.000000000 -0500
+@@ -165,6 +165,23 @@
+     return return_value;
+ }
+ 
++PyDoc_STRVAR(_io__Buffered_getbuffn__doc__,
++"getbuffn($self, /)\n"
++"--\n"
++"\n");
++
++#define _IO__BUFFERED_GETBUFFN_METHODDEF    \
++    {"getbuffn", (PyCFunction)_io__Buffered_getbuffn, METH_NOARGS, _io__Buffered_getbuffn__doc__},
++
++static PyObject *
++_io__Buffered_getbuffn_impl(buffered *self);
++
++static PyObject *
++_io__Buffered_getbuffn(buffered *self, PyObject *Py_UNUSED(ignored))
++{
++    return _io__Buffered_getbuffn_impl(self);
++}
++
+ PyDoc_STRVAR(_io__Buffered_readinto__doc__,
+ "readinto($self, buffer, /)\n"
+ "--\n"
+--- Modules/_io/bufferedio.c.orig	2017-12-18 23:53:56.000000000 -0500
++++ Modules/_io/bufferedio.c	2018-01-01 01:23:25.000000000 -0500
+@@ -40,6 +40,7 @@
+ _Py_IDENTIFIER(peek);
+ _Py_IDENTIFIER(read);
+ _Py_IDENTIFIER(read1);
++_Py_IDENTIFIER(getbuffn);
+ _Py_IDENTIFIER(readable);
+ _Py_IDENTIFIER(readinto);
+ _Py_IDENTIFIER(readinto1);
+@@ -187,6 +188,18 @@
+     return bufferediobase_unsupported("read1");
+ }
+ 
++
++PyDoc_STRVAR(bufferediobase_getbuffn_doc,
++    "Return the number of bytes buffered\n"
++    "on the underlying raw stream.\n");
++
++static PyObject *
++bufferediobase_getbuffn(PyObject *self, PyObject *args)
++{
++    return bufferediobase_unsupported("getbuffn");
++}
++
++
+ PyDoc_STRVAR(bufferediobase_write_doc,
+     "Write the given buffer to the IO stream.\n"
+     "\n"
+@@ -987,6 +1000,24 @@
+ }
+ 
+ static PyObject *
++_io__Buffered_getbuffn_impl(buffered *self)
++{
++    Py_ssize_t have;
++    PyObject *res = NULL;
++
++    CHECK_INITIALIZED(self)
++
++    CHECK_CLOSED(self, "read of closed file")
++
++    /* Return number of bytes buffered */
++    have = Py_SAFE_DOWNCAST(READAHEAD(self), Py_off_t, Py_ssize_t);
++    res = PyLong_FromSsize_t( have );
++    Py_INCREF(res);
++
++    return res;
++}
++
++static PyObject *
+ _buffered_readinto_generic(buffered *self, Py_buffer *buffer, char readinto1)
+ {
+     Py_ssize_t n, written = 0, remaining;
+@@ -2206,6 +2237,12 @@
+ }
+ 
+ static PyObject *
++bufferedrwpair_getbuffn(rwpair *self, PyObject *args)
++{
++    return _forward_call(self->reader, &PyId_getbuffn, args);
++}
++
++static PyObject *
+ bufferedrwpair_readinto(rwpair *self, PyObject *args)
+ {
+     return _forward_call(self->reader, &PyId_readinto, args);
+@@ -2342,6 +2379,7 @@
+     _IO__BUFFEREDIOBASE_DETACH_METHODDEF
+     {"read", bufferediobase_read, METH_VARARGS, bufferediobase_read_doc},
+     {"read1", bufferediobase_read1, METH_VARARGS, bufferediobase_read1_doc},
++    {"getbuffn", bufferediobase_getbuffn, METH_NOARGS, bufferediobase_getbuffn_doc},
+     _IO__BUFFEREDIOBASE_READINTO_METHODDEF
+     _IO__BUFFEREDIOBASE_READINTO1_METHODDEF
+     {"write", bufferediobase_write, METH_VARARGS, bufferediobase_write_doc},
+@@ -2416,6 +2454,7 @@
+     _IO__BUFFERED_READ_METHODDEF
+     _IO__BUFFERED_PEEK_METHODDEF
+     _IO__BUFFERED_READ1_METHODDEF
++    _IO__BUFFERED_GETBUFFN_METHODDEF
+     _IO__BUFFERED_READINTO_METHODDEF
+     _IO__BUFFERED_READINTO1_METHODDEF
+     _IO__BUFFERED_READLINE_METHODDEF
+@@ -2584,6 +2623,7 @@
+     {"read", (PyCFunction)bufferedrwpair_read, METH_VARARGS},
+     {"peek", (PyCFunction)bufferedrwpair_peek, METH_VARARGS},
+     {"read1", (PyCFunction)bufferedrwpair_read1, METH_VARARGS},
++    {"getbuffn", (PyCFunction)bufferedrwpair_getbuffn, METH_NOARGS},
+     {"readinto", (PyCFunction)bufferedrwpair_readinto, METH_VARARGS},
+     {"readinto1", (PyCFunction)bufferedrwpair_readinto1, METH_VARARGS},
+ 
+@@ -2678,6 +2718,7 @@
+     _IO__BUFFERED_TRUNCATE_METHODDEF
+     _IO__BUFFERED_READ_METHODDEF
+     _IO__BUFFERED_READ1_METHODDEF
++    _IO__BUFFERED_GETBUFFN_METHODDEF
+     _IO__BUFFERED_READINTO_METHODDEF
+     _IO__BUFFERED_READINTO1_METHODDEF
+     _IO__BUFFERED_READLINE_METHODDEF
