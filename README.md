@@ -95,6 +95,11 @@ That's it! On BufferedReader (default for calls to "open" or "io.open") calls to
 
 The goal is to get this merged upstream, and to add "getbuffn" functionality to sockets and maybe other forms of buffered I/O as well.
 
+This has been submitted as issue32475: https://bugs.python.org/issue32475
+
+
+API
+===
 
 **nonblock\_read**
 
