@@ -100,15 +100,15 @@ def nonblock_read(stream, limit=None, forceMode=None):
     #    hasGetBuffN = False   
     #elif hasattr(stream, 'getbuffn'):
     if hasattr(stream, 'getbuffn'):
-        print ( "getbuffn detected (direct)" )
+        #print ( "getbuffn detected (direct)" )
         hasGetBuffN = True
         getbuffn = stream.getbuffn
     elif hasattr(stream, 'buffer') and hasattr(stream.buffer, 'getbuffn'):
-        print ( "getbuffn detected (on .buffer obj)" )
+        #print ( "getbuffn detected (on .buffer obj)" )
         hasGetBuffN = True
         getbuffn = stream.buffer.getbuffn
     else:
-        print ( "No 3 ")
+        #print ( "No 3 ")
         hasGetBuffN = False
 
     while True:
