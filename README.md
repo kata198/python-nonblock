@@ -4,6 +4,96 @@ Non-blocking python IO functions
 
 These are pure-python functions which perform non-blocking I/O in python.
 
+# getbuffn branch
+
+This is the "getbuffn" branch, which is for the development of a yet-submitted/accepted patch to the python core buffered i/o, which makes visible the amount of buffered bytes available. This has an INSANE boost to performance when using nonblock\_read, which is other unreasonably slow on large files etc.
+
+The following is a copy of the comments from nonblock/read.py:
+
+
+	# See if this is a buffered stream which supports the "getbuffn" call.
+	#    getbuffn is a yet-to-be-submitted/accepted additional call in the
+	#     python api for a BufferedReader stream.
+	#
+	# It returns the number of bytes which are waiting to be returned in the
+	#   underlying stream buffer.
+	#
+	# On a typical linux filesystem which uses 4096 byte I/O blocks, the "read"
+	#  call will end up reading 4096 bytes, yet we read just 1,
+	#   in order to prevent blocking (by selecting each byte).
+	#
+	#  This means that for a filesystem non-blocking I/O read, we are basically
+	#    adding the unnecessary overhead of a select syscall, a call to the python read,
+	#    and all the associated overhead of those functions and going from C-mode to Py-mode
+	#   4095 times out of 4096.
+	#
+	#  Also helps a lot with scheduling on a loaded system as we are limiting the amount of
+	#   times we allow ourselves to be pre-empted
+	#
+	#  With the addition of "getbuffn" we are able to suck up that full buffer in one swing.
+	#
+	#   On a 5 meg file from a VM which is running on an SSD, I average the following:
+	#
+	#    Loaded system, non-cached I/O:
+	#
+	#       One-Fell-Swoop file.read() - .3 seconds
+	#
+	#       getbuffn-patched python and this impl - 3.1 seconds
+	#
+	#       unpatched python and this impl - 41 to 55 = 44 seconds. ( avg min - avg max)
+	#
+	#    Unloaded system, cached I/O:
+	#
+	#       One-Fell-Swoop file.read() - .0017 seconds
+	#
+	#       getbuffn-patched python and this impl - .034 seconds
+	#
+	#       unpatched python and this impl - 45 seconds. ( not as variable as loaded system )
+	#
+	#
+	#  TODO:
+	#       - This call has been "hacked-in" with the existing function-flow
+	#          for ease of analysis and comparison. In reality, we should be
+	#          calling getbuffn AFTER we read the single byte, which will
+	#          save a loop iteration and a call to select
+	#
+	#       - Currently we ignore the #limit parameter and may over-read with
+	#          this impl. We should thus choose to read the minimum of
+	#          available bytes (getbuffn ret) and (limit - bytesRead)
+	#
+	#       - Maybe figure out a way to either add "getbuffn" support to sockets
+	#          at the libpython level
+
+
+
+How to use the getbuffn enhancement
+-----------------------------------
+
+**1. - Patch and build Python 3.6 with getbuffn implementation**
+
+If you want to try this out, you can build Python 3.6 (tested patch works on 3.6.1 and 3.6.4) with the addition of Python\_3\_6\_4\_getbuffn.patch which is found in the root of the project directory.
+
+Patch can be applied via (from root Python source dir):
+
+	cat Python_3_6_4_getbuffn.patch | patch -p1
+
+And then build and install as normal (probably within your distro's package manager setup)
+
+This will add the "getbuffn" functionality to BufferedWriter. It is not yet available for sockets or other I/O
+
+**2. - Install python-nonblock from the 4.0branch\_getbuffn branch**
+
+Clone this repository and run "git checkout 4.0branch\_getbuffn" to checkout this branch
+
+Run setup.py to install via setuptools either into a virtualenv or globally
+
+**3. - Enjoy performance boost**
+
+That's it! On BufferedReader (default for calls to "open" or "io.open") calls to nonblock.nonblock\_read will gain *significant* performance.
+
+**4. - Check back often**
+
+The goal is to get this merged upstream, and to add "getbuffn" functionality to sockets and maybe other forms of buffered I/O as well.
 
 
 **nonblock\_read**

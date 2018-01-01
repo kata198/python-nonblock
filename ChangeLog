@@ -1,3 +1,8 @@
+* 4.0.0-getbuffn - Jan 1 2018
+
+- Adds an in-development impl for "getbuffn" to python core and updated nonblock_read to support it on buffered streams.
+  See README.md for more info.
+
 * 4.0.0 Jan 6 2017
 - Update testWrite.py program for better testing of I/O priority levels in
 BackgroundWrite given your default load
