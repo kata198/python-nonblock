@@ -1,5 +1,5 @@
 '''
-    Copyright (c) 2015-2016 Timothy Savannah under terms of LGPLv2. You should have received a copy of this LICENSE with this distribution.
+    Copyright (c) 2015-2018 Timothy Savannah under terms of LGPLv2. You should have received a copy of this LICENSE with this distribution.
 
     Contains pure-python functions for non-blocking IO in python
 '''
@@ -14,6 +14,6 @@ from .BackgroundRead import bgread
 
 __all__ = ('nonblock_read', 'bgwrite', 'bgwrite_chunk', 'BackgroundIOPriority', 'bgread')
 
-__version__ = '4.0.0'
+__version__ = '4.0.0-getbuffn'
 __version_tuple = (4, 0, 0)
 
