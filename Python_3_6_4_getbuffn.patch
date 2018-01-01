@@ -1,5 +1,5 @@
---- Modules/_io/clinic/bufferedio.c.h.orig	2018-01-01 01:22:36.000000000 -0500
-+++ Modules/_io/clinic/bufferedio.c.h	2018-01-01 01:22:46.000000000 -0500
+--- a/Modules/_io/clinic/bufferedio.c.h	2018-01-01 01:22:36.000000000 -0500
++++ b/Modules/_io/clinic/bufferedio.c.h	2018-01-01 01:22:46.000000000 -0500
 @@ -165,6 +165,23 @@
      return return_value;
  }
@@ -24,8 +24,8 @@
  PyDoc_STRVAR(_io__Buffered_readinto__doc__,
  "readinto($self, buffer, /)\n"
  "--\n"
---- Modules/_io/bufferedio.c.orig	2017-12-18 23:53:56.000000000 -0500
-+++ Modules/_io/bufferedio.c	2018-01-01 01:23:25.000000000 -0500
+--- a/Modules/_io/bufferedio.c	2017-12-18 23:53:56.000000000 -0500
++++ b/Modules/_io/bufferedio.c	2018-01-01 01:23:25.000000000 -0500
 @@ -40,6 +40,7 @@
  _Py_IDENTIFIER(peek);
  _Py_IDENTIFIER(read);
