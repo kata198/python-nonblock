@@ -41,8 +41,16 @@ def nonblock_read(stream, limit=None, forceMode=None):
     # Determine if our function is "read" (file-like objects) or "recv" (socket-like objects)
     if hasattr(stream, 'read'):
         readByte = lambda : stream.read(1)
+        # TODO: Should we be calling "read" or "read1" here (for multi-read)
+        #         "read1" seems to make the most sense conceptually,
+        #         but based on readahead maybe "read" could be better?
+        #
+        #         "read" does seem to test slightly better than read1
+        #            on an SSD
+        readBytes = lambda n : stream.read(n)
     elif hasattr(stream, 'recv'):
         readByte = lambda : stream.recv(1)
+        readBytes = lambda n : stream.recv(n)
     else:
         raise ValueError('Cannot determine how to read from provided stream, %s.' %(repr(stream),))
 
@@ -95,6 +103,9 @@ def nonblock_read(stream, limit=None, forceMode=None):
     #       - Currently we ignore the #limit parameter and may over-read with
     #          this impl. We should thus choose to read the minimum of
     #          available bytes (getbuffn ret) and (limit - bytesRead)
+    #
+    #       - Maybe figure out a way to either add "getbuffn" support to sockets
+    #          at the libpython level
 
     #if True:
     #    hasGetBuffN = False   
@@ -129,17 +140,12 @@ def nonblock_read(stream, limit=None, forceMode=None):
                 numToRead = availableBytes
                 
 
+        # TODO: Maybe simplify this ( to only readBytes version? )
+        #         written this way for dev/debug purposes for now.
         if numToRead == 1:
             c = readByte()
         else:
-            # TODO: Should we be calling "read" or "read1" here?
-            #         "read1" seems to make the most sense conceptually,
-            #         but based on readahead maybe "read" could be better?
-            #
-            #         "read" does seem to test slightly better than read1
-            #            on an SSD
-            c = stream.read(numToRead)
-            #c = stream.read1(numToRead)
+            c = readBytes(numToRead)
 
         if c == emptyStr:
             # Stream has been closed
