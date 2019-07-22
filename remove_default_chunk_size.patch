@@ -1,10 +1,14 @@
+This will remove the default chunk size for each priority level.
+
+Do not yet use, this is a work-in-progress, and if you do not specify explicit chunk sizes, you will suffer a significant drop in performance.
+
 diff --git a/nonblock/BackgroundWrite.py b/nonblock/BackgroundWrite.py
-index efb15ea..26932e3 100644
+index 8b9765c..b76cc28 100644
 --- a/nonblock/BackgroundWrite.py
 +++ b/nonblock/BackgroundWrite.py
-@@ -18,8 +18,9 @@ __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite
- 
- DEBUG = False
+@@ -26,8 +26,9 @@ __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite
+ # Uncomment the "DEBUG" sections you want to see below. Search for DEBUG.
+ #DEBUG = False
  
 +_SIZE_MEG = 1024 * 1024
  
@@ -13,7 +17,7 @@ index efb15ea..26932e3 100644
      '''
          bgwrite - Start a background writing process
  
-@@ -38,7 +39,7 @@ def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
+@@ -46,7 +47,7 @@ def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
              @return - BackgroundWriteProcess - An object representing the state of this operation. @see BackgroundWriteProcess
      '''
          
@@ -22,7 +26,7 @@ index efb15ea..26932e3 100644
      thread.start()
  
      return thread
-@@ -57,9 +58,9 @@ def bgwrite_chunk(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=
+@@ -65,9 +66,9 @@ def bgwrite_chunk(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=
  
          @param chunkSize <integer> - The max siZe of each chunk.
      '''
@@ -34,7 +38,7 @@ index efb15ea..26932e3 100644
  
  
  class BackgroundIOPriority(object):
-@@ -69,9 +70,9 @@ class BackgroundIOPriority(object):
+@@ -77,9 +78,9 @@ class BackgroundIOPriority(object):
              See __init__ for fields
      '''
  
@@ -46,7 +50,7 @@ index efb15ea..26932e3 100644
          '''
              __init__ - Create a BackgroundIOPriority. 
  
-@@ -81,12 +82,6 @@ class BackgroundIOPriority(object):
+@@ -89,12 +90,6 @@ class BackgroundIOPriority(object):
              @param chainPollTime - float > 0, When chaining, this is the sleep time between checking if prior is finished.
                  Too low and the polling takes up CPU time, too high and you'll lose a little time in between chained writes, while gaining interactivity elsewhere.
  
@@ -59,7 +63,7 @@ index efb15ea..26932e3 100644
                A high number means higher throughput at the cost of lest interactivity for other tasks, a low number means the opposite.
  
                So, for example, a bandwidthPct of "50" will attempt to use "50%" of the available bandwidth. Note, this does not represent theroetical
-@@ -99,7 +94,7 @@ class BackgroundIOPriority(object):
+@@ -107,7 +102,7 @@ class BackgroundIOPriority(object):
                See #bandwidthPct for the other half of the story. The higher this number, the more "fair" your application will be against a constant
                rate of I/O by other applications, but the less able it may be to play fair when the external I/O is spiking.
  
@@ -68,7 +72,7 @@ index efb15ea..26932e3 100644
                but you may want to tune it if you use really large or really small chunk sizes.
              
              
-@@ -108,7 +103,6 @@ class BackgroundIOPriority(object):
+@@ -116,7 +111,6 @@ class BackgroundIOPriority(object):
  
  
          self.chainPollTime = chainPollTime
@@ -76,38 +80,34 @@ index efb15ea..26932e3 100644
          self.bandwidthPct = float(bandwidthPct)
          if bandwidthPct <= 0 or bandwidthPct > 100:
              raise ValueError('Given bandwidthPct %f must be > 0 and <= 100')
-@@ -126,20 +120,19 @@ class BackgroundIOPriority(object):
-         raise KeyError('Unknown key: %s\n' %(key,))
-         
- 
--_SIZE_MEG = 1024 * 1024
+@@ -138,16 +132,16 @@ _SIZE_MEG = 1024 * 1024
  
  # BG_IO_PRIOS - Predefined I/O priorities, 1-10. The lower the number, the more throughput at the cost of interactivity
  BG_IO_PRIOS = {
 -    1  : BackgroundIOPriority(.0009, _SIZE_MEG * 5,    100), # Maximum throughput, no regard for interactivity.
 -    2  : BackgroundIOPriority(.0009, _SIZE_MEG * 4,     90),
--    3  : BackgroundIOPriority(.0015, _SIZE_MEG * 3,     80),
--    4  : BackgroundIOPriority(.0015, _SIZE_MEG * 2,     75),
--    5  : BackgroundIOPriority(.0019, _SIZE_MEG * 1.25,  65),
--    6  : BackgroundIOPriority(.0019, _SIZE_MEG * .6,   55),
--    7  : BackgroundIOPriority(.0024, _SIZE_MEG * .4,    45),
--    8  : BackgroundIOPriority(.0024, _SIZE_MEG * .25,   35),
--    9  : BackgroundIOPriority(.0031, _SIZE_MEG * .175,  31),
--    10 : BackgroundIOPriority(.0100, _SIZE_MEG * .1,    25), # Least throughput, most interactivity, very little throughput
-+    1  : BackgroundIOPriority(.0009, 100), # Maximum throughput, no regard for interactivity.
-+    2  : BackgroundIOPriority(.0009,  90),
-+    3  : BackgroundIOPriority(.0015,  80),
-+    4  : BackgroundIOPriority(.0015,  75),
-+    5  : BackgroundIOPriority(.0019,  65),
-+    6  : BackgroundIOPriority(.0019, 55),
-+    7  : BackgroundIOPriority(.0024,  45),
-+    8  : BackgroundIOPriority(.0024,  35),
-+    9  : BackgroundIOPriority(.0031,  31),
-+    10 : BackgroundIOPriority(.0100,  25), # Least throughput, most interactivity, very little throughput
+-    3  : BackgroundIOPriority(.0015, _SIZE_MEG * 3,     78),
+-    4  : BackgroundIOPriority(.0015, _SIZE_MEG * 2,     72),
+-    5  : BackgroundIOPriority(.0019, _SIZE_MEG * 1.6,   65),
+-    6  : BackgroundIOPriority(.0019, _SIZE_MEG * .75,   55),
+-    7  : BackgroundIOPriority(.0024, _SIZE_MEG * .69,   45),
+-    8  : BackgroundIOPriority(.0024, _SIZE_MEG * .5,    35),
+-    9  : BackgroundIOPriority(.0031, _SIZE_MEG * .3,    30),
+-    10 : BackgroundIOPriority(.0100, _SIZE_MEG * .25,   20), # Least throughput, most interactivity, very little throughput
++    1  : BackgroundIOPriority(.0009,  100), # Maximum throughput, no regard for interactivity.
++    2  : BackgroundIOPriority(.0009,   90),
++    3  : BackgroundIOPriority(.0015,   78),
++    4  : BackgroundIOPriority(.0015,   72),
++    5  : BackgroundIOPriority(.0019,   65),
++    6  : BackgroundIOPriority(.0019,   55),
++    7  : BackgroundIOPriority(.0024,   45),
++    8  : BackgroundIOPriority(.0024,   35),
++    9  : BackgroundIOPriority(.0031,   30),
++    10 : BackgroundIOPriority(.0100,   20), # Least throughput, most interactivity, very little throughput
  }
  
  
-@@ -157,7 +150,7 @@ class BackgroundWriteProcess(threading.Thread):
+@@ -165,7 +159,7 @@ class BackgroundWriteProcess(threading.Thread):
      '''
  # Design question: What about errors?
  
@@ -116,7 +116,7 @@ index efb15ea..26932e3 100644
          '''
              __init__ - Create the BackgroundWriteProcess thread. You should probably use bgwrite or bgwrite_chunk instead of calling this directly.
  
-@@ -171,6 +164,12 @@ class BackgroundWriteProcess(threading.Thread):
+@@ -179,6 +173,12 @@ class BackgroundWriteProcess(threading.Thread):
  
              @param ioPrio <int/BackgroundIOPriority> - If an integer (1-10), a predefined BackgroundIOPriority will be used. 1 is highest throughput, 10 is most interactivity. You can also pass in your own BackgroundIOPriority object if you want to define a custom profile.
  
@@ -129,7 +129,7 @@ index efb15ea..26932e3 100644
  
              @raises ValueError - If ioPrio is neither a BackgroundIOPriority nor integer 1-10 inclusive
                                 - If chainAfter is not a BackgroundWriteProcess or None
-@@ -187,7 +186,8 @@ class BackgroundWriteProcess(threading.Thread):
+@@ -195,7 +195,8 @@ class BackgroundWriteProcess(threading.Thread):
                  raise ValueError('Invalid ioPrio: %s. Available priority levels are: %s' %(str(ioPrio), str(list(BG_IO_PRIOS.keys()))) )
  
          if type(dataBlocks) not in (list, tuple):
