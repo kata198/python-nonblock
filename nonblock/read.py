@@ -3,7 +3,7 @@
 
     read.py Contains pure-python functions for non-blocking reads in python
 
-	
+
 '''
 # vim: ts=4 sw=4 expandtab
 

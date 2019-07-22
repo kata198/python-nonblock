@@ -46,7 +46,7 @@ def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
 
             @return - BackgroundWriteProcess - An object representing the state of this operation. @see BackgroundWriteProcess
     '''
-        
+
     thread = BackgroundWriteProcess(fileObj, data, closeWhenFinished, chainAfter, ioPrio)
     thread.start()
 
@@ -82,7 +82,7 @@ class BackgroundIOPriority(object):
 
     def __init__(self, chainPollTime, defaultChunkSize, bandwidthPct, numChunksRateSmoothing=5):
         '''
-            __init__ - Create a BackgroundIOPriority. 
+            __init__ - Create a BackgroundIOPriority.
 
             Some terms: throughput - Bandwidth out (Megs per second)
                         interactivity - CPU time available for other tasks (calculations, other I/O, etc)
@@ -102,7 +102,7 @@ class BackgroundIOPriority(object):
               max bandwidth, i.e. the max rate of the I/O device, but the amount of available bandwidth available to this application. For example,
               if this is given "100%", no throttling is performed. If this is given "80%", then it calculates the average time to write a single chunk,
               ( see #numChunksRateSmoothing for how many chunks are used in evaluating this average ), and sleeps for then 20% of that time at the end
-              of every chunk. 
+              of every chunk.
 
             @param numChunksRateSmoothing - integer >= 1 , Default 5. This is the number of chunks which are used in calculating the current throughput rate.
               See #bandwidthPct for the other half of the story. The higher this number, the more "fair" your application will be against a constant
@@ -110,8 +110,8 @@ class BackgroundIOPriority(object):
 
               Also, consider that this is related to the #defaultChunkSize, as it is not a constant period of time. The default of "5" should be okay,
               but you may want to tune it if you use really large or really small chunk sizes.
-            
-            
+
+
             An "interactivity score" is defined to be (number of calculations) / (time to write data).
         '''
 
@@ -133,7 +133,7 @@ class BackgroundIOPriority(object):
         if key in BackgroundIOPriority.__slots__:
             return setattr(self, key, value)
         raise KeyError('Unknown key: %s\n' %(key,))
-        
+
 
 _SIZE_MEG = 1024 * 1024
 
@@ -275,7 +275,7 @@ class BackgroundWriteProcess(threading.Thread):
             shouldRecalculate = lambda i, numChunksRateSmoothing, firstPass : False
         else:
             shouldRecalculate = lambda i, numChunksRateSmoothing, firstPass : firstPass or i == numChunksRateSmoothing
-            
+
 
         while len(self.remainingData) > 0:
 
@@ -283,7 +283,7 @@ class BackgroundWriteProcess(threading.Thread):
             nextData = self.remainingData.popleft()
             fileObj.write(nextData)
             doFlush(fileObj)
-            
+
             dataWritten += len(nextData)
             if sleepTime:
                 sleepBefore = time.time()
@@ -292,9 +292,9 @@ class BackgroundWriteProcess(threading.Thread):
 
                 sleepAfter = time.time()
                 timeSlept += (sleepAfter - sleepBefore)
- 
+
             if shouldRecalculate(i, numChunksRateSmoothing, firstPass) is True:
-                # if not sleeptime, we are on first 
+                # if not sleeptime, we are on first
                 # We've completed a full period, time for charity
                 after = time.time()
 

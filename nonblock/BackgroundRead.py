@@ -3,7 +3,7 @@
 
     read.py Contains pure-python functions for non-blocking reads in python
 
-	
+
 '''
 # vim: ts=4 sw=4 expandtab
 
@@ -27,7 +27,7 @@ def bgread(stream, blockSizeLimit=65535, pollTime=.03, closeStream=True):
                 If None, the stream will be read from until there is no more available data (not closed, but you've read all that's been flushed to straem). This is okay for smaller datasets, but this number effectively controls the amount of CPU time spent in I/O on this stream VS everything else in your application. The default of 65535 bytes is a fair amount of data.
 
             @param pollTime <float> - Default .03 (30ms) After all available data has been read from the stream, wait this many seconds before checking again for more data.
-                
+
                 A low number here means a high priority, i.e. more cycles will be devoted to checking and collecting the background data. Since this is a non-blocking read, this value is the "block", which will return execution context to the remainder of the application. The default of 100ms should be fine in most cases. If it's really idle data collection, you may want to try a value of 1 second.
 
             @param closeStream <bool> - Default True. If True, the "close" method on the stream object will be called when the other side has closed and all data has been read.
@@ -84,7 +84,7 @@ class BackgroundReadData(object):
             data - A calculated property, which is a bytes/str (depending on stream mode). It is the joining of all the read blocks, and contains all the data read to-date.
 
             isFinished - starts False, and becomes True after all data has been read from the stream. Will remain False if there is an exception raised during I/O
-            
+
             error - starts None, and is set to any exception that is raised during reading (which will also terminate the thread)
     '''
 
@@ -109,7 +109,7 @@ class BackgroundReadData(object):
         '''
 
         return self.emptyStr.join(self.blocks)
-        
+
 
 
 

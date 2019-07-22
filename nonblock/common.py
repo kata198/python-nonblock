@@ -18,7 +18,7 @@ def detect_stream_mode(stream):
         elif 't' in stream.mode:
             return str
 
-    # Read a zero-length string off the device 
+    # Read a zero-length string off the device
     if hasattr(stream, 'read'):
         zeroStr = stream.read(0)
         if type(zeroStr) is str:
