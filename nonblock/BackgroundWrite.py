@@ -7,7 +7,6 @@
 '''
 # vim: ts=4 sw=4 expandtab
 
-import sys
 import threading
 import time
 
@@ -25,6 +24,8 @@ __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite
 
 # Uncomment the "DEBUG" sections you want to see below. Search for DEBUG.
 #DEBUG = False
+#if DEBUG:
+#    import sys
 
 
 def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
@@ -229,8 +230,8 @@ class BackgroundWriteProcess(threading.Thread):
         bandwidthPctDec = bandwidthPct / 100.0
 
 
-        # Number of blocks, total
-        numBlocks = len(self.remainingData)
+        # Number of blocks, total (note: unused, removed)
+        #numBlocks = len(self.remainingData)
         # Bytes written
         dataWritten = 0
 
@@ -299,9 +300,10 @@ class BackgroundWriteProcess(threading.Thread):
 
                 delta = after - before - timeSlept
 
-                rate = dataWritten / delta
 
 #                if DEBUG is True:
+#                    rate = dataWritten / delta
+
 #                    sys.stdout.write('\t  I have written %d bytes in %3.3f seconds and slept %3.3f sec (%4.5f M/s over %3.3fs)\n' %(dataWritten, delta, timeSlept, (rate) / (1024*1024), delta + timeSlept  ))
 #                    sys.stdout.flush()
 
