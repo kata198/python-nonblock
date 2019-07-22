@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-    This testWrite.py file is a testcase for python-nonblock (c) 2015,2016,2017 Tim Savannah.
+    This testWrite.py file is a testcase for python-nonblock Copyright (c) 2015, 2016, 2017, 2019 Timothy Savannah.
 
     The testcase itself is hereby granted access as a Public Domain work, or the closest legally in your area.
 
@@ -22,11 +22,13 @@
     and off. For example, if you are running a dd if=/dev/urandom of=testfile bs=512 to simulate background I/O on the same device,
     it will flush both datasets. This is moreso intended to be set to True when NO background I/O is going.
 '''
+
 import os
-import glob
 import time
 import sys
 import subprocess
+import tempfile
+
 from nonblock import bgwrite, bgwrite_chunk
 
 
@@ -37,7 +39,9 @@ class dummy(object):
     pass
 
 
-# Pick a big file
+# TODO: Use os.linesep instead of explicit '\n' ?
+
+# Generate a big file
 
 # Set to True to sync ALL I/O (this process and others) to disk before each test.
 #  This should be True if no background I/O is being ran, and maybe True maybe False if some is running.
@@ -45,30 +49,115 @@ class dummy(object):
 #  a large variance and margin of error.
 DO_SYNC = True
 
+def printUsage():
+    sys.stderr.write('''Usage: %s (Optional: [start prio] [end prio])
+  Runs through priority levels, either specified start/end (inclusive), or if no args provided, the full set 1-9.
+
+If specified, start prio must be <= end prio,
+start prio must be >= 1,
+end prio must be <= 9.
+
+Tests interactivity by performing math during two sets of simultaneous bgwrites
+''' %(os.path.basename(__file__), )
+)
+    sys.stderr.flush()
+
 if __name__ == '__main__':
 
-    BIG_FILE = glob.glob('/usr/lib/libc-2.*.so')[0]
+    if '--help' in sys.argv:
+        printUsage()
+        sys.exit(0)
 
-    startPrio = 1
-    endPrio = 10
+    if len(sys.argv) not in (1, 3):
+        sys.stderr.write('Invalid arguments.\n\n')
+        printUsage()
+        sys.exit(1)
 
     if len(sys.argv) == 3:
+        ## They have provided a start and end priority
+
+        # Validate they are integers
+        if not sys.argv[1].isdigit() and not sys.argv[2].isdigit():
+            sys.stderr.write('Right number of arguments, but not whole integers.\n\n')
+            printUsage()
+            sys.exit(1)
+
+        # Extract priorities to test from arguments
         startPrio = int(sys.argv[1])
-        endPrio = int(sys.argv[2]) + 1
+        endPrio = int(sys.argv[2])
+
+        # Validate these are valid priorities, and in valid order
+        if startPrio > endPrio:
+            sys.stderr.write('Start priority is greater than end priority, impossible!\n\n')
+            printUsage()
+            sys.exit(1)
+
+        if startPrio < 1:
+            sys.stderr.write('Start priority must be >= 1\n\n')
+            printUsage()
+            sys.exit(1)
+
+        if endPrio > 9:
+            sys.stderr.write('End priority must be <= 9\n\n')
+            printUsage()
+            sys.exit(1)
+
+    else:
+
+        print ( 'No arguments provided, defaulting to testing full set (1-9 inclusive) of IO priorities\n' )
+
+        startPrio = 1
+        endPrio = 9
+
+
+
+    ## Generate a fairly large dataset
+
+    bigFile = tempfile.NamedTemporaryFile(mode='wt')
+    # Write some data
+    numLetters = ord('z') - ord('a')
+    lettersLst = [ chr( ord('a') + i ) for i in range(numLetters) ]
+    lettersStr = ''.join(lettersLst)
+    curLen = 0
+    before = time.time()
+    # Size of my libc at time of writing
+    while curLen < 2317344:
+        bigFile.write(lettersStr)
+        curLen += numLetters
+
+    # Try to force flush
+    try:
+        bigFile.flush()
+    except:
+        pass
+    after = time.time()
+
+    print ( 'Generated %d bytes of data in %.5f seconds.' %( curLen, after - before ) )
+
+    bigFilename = bigFile.name
+
+    currentDirectory = os.path.abspath( os.path.dirname( __file__ ) )
+    baseFilename = os.path.basename( __file__ )
+    print ( 'Using containing directory of this file [ %s ] for writes...\n' %( currentDirectory, ) )
+
+    # Change dir to this directory, so we don't have to use os.sep
+    os.chdir(currentDirectory)
 
     username = os.environ['USER']
 
     # Some values used for the math
     x = 13
     y = 37
-    
-    # Get some big data
-    with open(BIG_FILE, 'rb') as f:
+
+    # Get some big data - open a fresh copy so we aren't reading from buffer
+    with open(bigFilename, 'rb') as f:
         before = time.time()
         data = f.read()
         after = time.time()
 
-    sys.stdout.write('Time to read: %f\n' %(after - before,))
+    print ('Time to read %d bytes: %f\n' %(len(data), after - before,) )
+
+    print ( 'Running through IO priorities, %d -> %d (inclusive),\n  whilst running simultaneous math calculations to test interactivity\n  and I/O rate at each level...\n\n%s\n\n' %( startPrio, endPrio, '-' * 50, ) )
 
     # Expand that big data
     data = data * 50
@@ -76,16 +165,16 @@ if __name__ == '__main__':
     dataLen = len(data)
 
     # Iterate through the I/O priorities, do the operation, and show the score.
-    for ioPrio in range(startPrio, endPrio, 1):
+    for ioPrio in range(startPrio, endPrio + 1, 1):
         answers = [22]
         answers2 = [16]
         answers3 = [81]
-        if os.path.exists('/home/%s/nb_test_output1' %(username,)):
-            os.unlink('/home/%s/nb_test_output1' %(username,))
-        if os.path.exists('/home/%s/nb_test_output2' %(username,)):
-            os.unlink('/home/%s/nb_test_output2' %(username,))
-        f = open('/home/%s/nb_test_output1' %(username,), 'wb')
-        f2 = open('/home/%s/nb_test_output2' %(username,), 'wb')
+        if os.path.exists('nb_test_output1'):
+            os.unlink('nb_test_output1')
+        if os.path.exists('nb_test_output2'):
+            os.unlink('nb_test_output2')
+        f = open('nb_test_output1', 'wb')
+        f2 = open('nb_test_output2', 'wb')
 
         if DO_SYNC is True:
             # Ensure pending data is flushed so next run has fair chance
@@ -131,17 +220,24 @@ if __name__ == '__main__':
         numAnswers = len(answers) + len(answers2) + len(answers3) - 3
         delta = round(after - before, 5)
 
-        sys.stdout.write(('-' * 40) + '\n')
-        sys.stdout.write('[%d] Time to write: %f\n' %(ioPrio, delta) )
-        sys.stdout.write('[%d] Number of answers generated: %d\n' %(ioPrio, numAnswers) )
+        sys.stdout.write(('-' * 50) + '\n')
+        sys.stdout.write('[%d] Time to write: %f seconds\n' %(ioPrio, delta) )
+        sys.stdout.write('[%d] Number of answers generated during writes: %d\n' %(ioPrio, numAnswers) )
         sys.stdout.write('[%d] Average write speed: %f M/s\n' %(ioPrio, round((dataLen / delta) / (1024.0 * 1024.0), 5) ) )
         sys.stdout.write('[%d] Interactivity score: %f\n' % (ioPrio, round(numAnswers / delta, 5)) )
-        sys.stdout.write(('=' * 40) + '\n\n')
+        sys.stdout.write(('=' * 50) + '\n\n')
         sys.stdout.flush()
 
 
 
-    if os.path.exists('/home/%s/nb_test_output1' %(username,)):
-        os.unlink('/home/%s/nb_test_output1' %(username,))
-    if os.path.exists('/home/%s/nb_test_output2' %(username,)):
-        os.unlink('/home/%s/nb_test_output2' %(username,))
+    print ( 'Cleaning-up')
+
+    if os.path.exists('nb_test_output1'):
+        os.unlink('nb_test_output1')
+    if os.path.exists('nb_test_output2'):
+        os.unlink('nb_test_output2')
+
+    # Cleanup the generated data
+    bigFile.close()
+
+# vim: set ts=4 st=4 sw=4 expandtab :
