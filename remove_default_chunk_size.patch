@@ -3,12 +3,12 @@ This will remove the default chunk size for each priority level.
 Do not yet use, this is a work-in-progress, and if you do not specify explicit chunk sizes, you will suffer a significant drop in performance.
 
 diff --git a/nonblock/BackgroundWrite.py b/nonblock/BackgroundWrite.py
-index 8b9765c..b76cc28 100644
+index 3e812b4..7fd3e8e 100644
 --- a/nonblock/BackgroundWrite.py
 +++ b/nonblock/BackgroundWrite.py
-@@ -26,8 +26,9 @@ __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite
- # Uncomment the "DEBUG" sections you want to see below. Search for DEBUG.
- #DEBUG = False
+@@ -27,8 +27,9 @@ __all__ = ('BackgroundWriteProcess', 'BackgroundIOPriority', 'bgwrite', 'bgwrite
+ #if DEBUG:
+ #    import sys
  
 +_SIZE_MEG = 1024 * 1024
  
@@ -17,16 +17,16 @@ index 8b9765c..b76cc28 100644
      '''
          bgwrite - Start a background writing process
  
-@@ -46,7 +47,7 @@ def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
+@@ -47,7 +48,7 @@ def bgwrite(fileObj, data, closeWhenFinished=False, chainAfter=None, ioPrio=4):
              @return - BackgroundWriteProcess - An object representing the state of this operation. @see BackgroundWriteProcess
      '''
-         
+ 
 -    thread = BackgroundWriteProcess(fileObj, data, closeWhenFinished, chainAfter, ioPrio)
 +    thread = BackgroundWriteProcess(fileObj, data, closeWhenFinished, chainAfter, ioPrio, chunkSize)
      thread.start()
  
      return thread
-@@ -65,9 +66,9 @@ def bgwrite_chunk(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=
+@@ -66,9 +67,9 @@ def bgwrite_chunk(fileObj, data, chunkSize, closeWhenFinished=False, chainAfter=
  
          @param chunkSize <integer> - The max siZe of each chunk.
      '''
@@ -38,7 +38,7 @@ index 8b9765c..b76cc28 100644
  
  
  class BackgroundIOPriority(object):
-@@ -77,9 +78,9 @@ class BackgroundIOPriority(object):
+@@ -78,9 +79,9 @@ class BackgroundIOPriority(object):
              See __init__ for fields
      '''
  
@@ -48,9 +48,9 @@ index 8b9765c..b76cc28 100644
 -    def __init__(self, chainPollTime, defaultChunkSize, bandwidthPct, numChunksRateSmoothing=5):
 +    def __init__(self, chainPollTime, bandwidthPct, numChunksRateSmoothing=5):
          '''
-             __init__ - Create a BackgroundIOPriority. 
+             __init__ - Create a BackgroundIOPriority.
  
-@@ -89,12 +90,6 @@ class BackgroundIOPriority(object):
+@@ -90,12 +91,6 @@ class BackgroundIOPriority(object):
              @param chainPollTime - float > 0, When chaining, this is the sleep time between checking if prior is finished.
                  Too low and the polling takes up CPU time, too high and you'll lose a little time in between chained writes, while gaining interactivity elsewhere.
  
@@ -63,16 +63,16 @@ index 8b9765c..b76cc28 100644
                A high number means higher throughput at the cost of lest interactivity for other tasks, a low number means the opposite.
  
                So, for example, a bandwidthPct of "50" will attempt to use "50%" of the available bandwidth. Note, this does not represent theroetical
-@@ -107,7 +102,7 @@ class BackgroundIOPriority(object):
+@@ -108,7 +103,7 @@ class BackgroundIOPriority(object):
                See #bandwidthPct for the other half of the story. The higher this number, the more "fair" your application will be against a constant
                rate of I/O by other applications, but the less able it may be to play fair when the external I/O is spiking.
  
 -              Also, consider that this is related to the #defaultChunkSize, as it is not a constant period of time. The default of "5" should be okay,
 +              Also, consider that this is related to the #chunkSize, as it is not a constant period of time. The default of "5" should be okay,
                but you may want to tune it if you use really large or really small chunk sizes.
-             
-             
-@@ -116,7 +111,6 @@ class BackgroundIOPriority(object):
+ 
+ 
+@@ -117,7 +112,6 @@ class BackgroundIOPriority(object):
  
  
          self.chainPollTime = chainPollTime
@@ -80,7 +80,7 @@ index 8b9765c..b76cc28 100644
          self.bandwidthPct = float(bandwidthPct)
          if bandwidthPct <= 0 or bandwidthPct > 100:
              raise ValueError('Given bandwidthPct %f must be > 0 and <= 100')
-@@ -138,16 +132,16 @@ _SIZE_MEG = 1024 * 1024
+@@ -139,16 +133,16 @@ _SIZE_MEG = 1024 * 1024
  
  # BG_IO_PRIOS - Predefined I/O priorities, 1-10. The lower the number, the more throughput at the cost of interactivity
  BG_IO_PRIOS = {
@@ -107,7 +107,7 @@ index 8b9765c..b76cc28 100644
  }
  
  
-@@ -165,7 +159,7 @@ class BackgroundWriteProcess(threading.Thread):
+@@ -166,7 +160,7 @@ class BackgroundWriteProcess(threading.Thread):
      '''
  # Design question: What about errors?
  
@@ -116,7 +116,7 @@ index 8b9765c..b76cc28 100644
          '''
              __init__ - Create the BackgroundWriteProcess thread. You should probably use bgwrite or bgwrite_chunk instead of calling this directly.
  
-@@ -179,6 +173,12 @@ class BackgroundWriteProcess(threading.Thread):
+@@ -180,6 +174,12 @@ class BackgroundWriteProcess(threading.Thread):
  
              @param ioPrio <int/BackgroundIOPriority> - If an integer (1-10), a predefined BackgroundIOPriority will be used. 1 is highest throughput, 10 is most interactivity. You can also pass in your own BackgroundIOPriority object if you want to define a custom profile.
  
@@ -129,7 +129,7 @@ index 8b9765c..b76cc28 100644
  
              @raises ValueError - If ioPrio is neither a BackgroundIOPriority nor integer 1-10 inclusive
                                 - If chainAfter is not a BackgroundWriteProcess or None
-@@ -195,7 +195,8 @@ class BackgroundWriteProcess(threading.Thread):
+@@ -196,7 +196,8 @@ class BackgroundWriteProcess(threading.Thread):
                  raise ValueError('Invalid ioPrio: %s. Available priority levels are: %s' %(str(ioPrio), str(list(BG_IO_PRIOS.keys()))) )
  
          if type(dataBlocks) not in (list, tuple):
