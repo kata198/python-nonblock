@@ -12,7 +12,7 @@ if __name__ == '__main__':
         long_description = summary
 
     setup(name='python-nonblock',
-            version='4.0.0',
+            version='4.0.1',
             packages=['nonblock'],
             author='Tim Savannah',
             author_email='kata198@gmail.com',
