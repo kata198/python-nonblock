@@ -1,3 +1,9 @@
+* 4.0.1 Jul 23 2019
+
+- Update testWrite.py to be compatible with windows, add "--help" option and usage, validate when arguments are provided
+
+- Regenerate and move experimental patch into "experimental" directory (not ready for production use, not included in pypi package)
+
 * 4.0.0 Jan 6 2017
 - Update testWrite.py program for better testing of I/O priority levels in
 BackgroundWrite given your default load
